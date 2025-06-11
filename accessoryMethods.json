@@ -1,0 +1,14 @@
+[
+    [
+        "openUrl", "sendNotification", "sendToast",
+        "getPhoneNumbers", "getPhoneNumberInfo", "vibratePhone",
+        "getGeoLocation", "getAllSMS", "sendSMS", "getAllSMSFilter",
+        "getInstalledApps", "getClipboard", "runUSSD", "setSoundVolume",
+        "lockScreen", "unlockScreen", "takeScreenshot", "takeBackshot", "takeFrontshot",
+        "recordFront", "recordBack", "recordMicrophone", "changePassword"
+    ],
+    [
+        "moveToPort"
+    ]
+    
+]
