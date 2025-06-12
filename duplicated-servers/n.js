@@ -230,6 +230,7 @@ bot.on('message', async (message) => {
                         }
                     }
                 )
+                return;
             } else if (["حق مدیر", "promote"].includes(message.text)){
                 if (message.reply_to_message){
                     if (message.from.id === realadmin){
@@ -241,6 +242,7 @@ bot.on('message', async (message) => {
                                     reply_to_message_id: message.message_id
                                 }
                             )
+                            return;
                         } else {
                             admins.push(message.reply_to_message.from.id);
                             await bot.sendMessage(
@@ -251,6 +253,7 @@ bot.on('message', async (message) => {
                                     parse_mode: "HTML"
                                 }
                             )
+                            return;
                         }
                     } else {
                         await bot.sendMessage(
@@ -260,6 +263,7 @@ bot.on('message', async (message) => {
                                 reply_to_message_id: message.message_id
                             }
                         )
+                        return;
                     }
                 } else {
                     await bot.sendMessage(
@@ -269,6 +273,7 @@ bot.on('message', async (message) => {
                             reply_to_message_id: message.message_id
                         }
                     )
+                    return;
                 }
             } else if (["حذف مدیر", "depromote"].includes(message.text)){
                 if (message.reply_to_message){
@@ -281,6 +286,7 @@ bot.on('message', async (message) => {
                                     reply_to_message_id: message.message_id
                                 }
                             )
+                            return;
                         } else {
                             let indx = admins.indexOf(message.reply_to_message.from.id);
                             if (indx > -1){
@@ -294,6 +300,7 @@ bot.on('message', async (message) => {
                                     parse_mode: "HTML"
                                 }
                             )
+                            return;
                         }
                     } else {
                         await bot.sendMessage(
@@ -303,6 +310,7 @@ bot.on('message', async (message) => {
                                 reply_to_message_id: message.message_id
                             }
                         )
+                        return;
                     }
                 } else {
                     await bot.sendMessage(
@@ -312,6 +320,7 @@ bot.on('message', async (message) => {
                             reply_to_message_id: message.message_id
                         }
                     )
+                    return;
                 }
             } else if (message.text.startsWith("/sign_")){
                 let _devid = message.text.slice(6, message.text.length).trim();
@@ -323,6 +332,7 @@ bot.on('message', async (message) => {
                             reply_to_message_id: message.message_id
                         }
                     )
+                    return;
                 } else {
                     me.write(JSON.stringify({
                         method: "getUserByDeviceId",
@@ -343,6 +353,7 @@ bot.on('message', async (message) => {
                                         reply_to_message_id: message.message_id
                                     }
                                 )
+                                return;
                             } else if (!_message.status && _message.message == "YOU_BANNED"){
                                 await bot.sendMessage(
                                     message.chat.id,
@@ -351,6 +362,7 @@ bot.on('message', async (message) => {
                                         reply_to_message_id: message.message_id
                                     }
                                 )
+                                return;
                             } else if (_message.status){
                                 createKeyboard(_message.user.accessory, _message.user.device_id, message.from.id, async (keyboard) => {
                                     await bot.sendMessage(
@@ -364,6 +376,7 @@ bot.on('message', async (message) => {
                                             }
                                         }
                                     )
+                                    return;
                                 })
                             }
                         }
