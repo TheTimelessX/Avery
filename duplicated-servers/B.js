@@ -71,6 +71,14 @@ const server = net.createServer(async (socket) => {
                                 return;
                             }
 
+                            if (_port.user.is_ban){
+                                socket.write(JSON.stringify({
+                                    status: false,
+                                    message: "YOU_BANNED"
+                                }));
+                                return;
+                            }
+
                             if (message.method == "getUsers"){
                                 await getUsersByPort(message.port, async (allusers) => {
                                     socket.write(JSON.stringify(allusers));

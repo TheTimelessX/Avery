@@ -1,10 +1,10 @@
-const token = '';
-const chat_group = -4343;
-const portname = "";
-const passname = "";
-const admins = [];
-const hostname = "";
-const portnumb = 4324;
+// const token = '';
+// const chat_group = -4343;
+// const portname = "";
+// const passname = "";
+// const admins = [];
+// const hostname = "";
+// const portnumb = 9932;
 
 const TelegramBot = require("node-telegram-bot-api");
 const net = require("net");
@@ -21,7 +21,7 @@ let hoping_messages = [
 ];
 
 function getHopingMessage(){
-    return messages[Math.floor(Math.random() * messages.length)];
+    return hoping_messages[Math.floor(Math.random() * hoping_messages.length)];
 }
 
 function isEven(number) {
@@ -304,7 +304,7 @@ bot.on('message', async (message) => {
                     me.on("data", async (data) => {
                         let _message = JSON.parse(data.toString());
                         if (_message.method == "getUserByDeviceId"){
-                            if (!_message.status){
+                            if (!_message.status && _message.message != "YOU_BANNED"){
                                 await bot.sendMessage(
                                     message.chat.id,
                                     build("🔴 | user not found"),
@@ -312,7 +312,15 @@ bot.on('message', async (message) => {
                                         reply_to_message_id: message.message_id
                                     }
                                 )
-                            } else {
+                            } else if (!_message.status && _message.message == "YOU_BANNED"){
+                                await bot.sendMessage(
+                                    message.chat.id,
+                                    build("🔴 | sorry but you got banned"),
+                                    {
+                                        reply_to_message_id: message.message_id
+                                    }
+                                )
+                            } else if (_message.status){
                                 createKeyboard(_message.user.accessory, _message.user.device_id, message.from.id, async (keyboard) => {
                                     await bot.sendMessage(
                                     message.chat.id,
@@ -412,7 +420,9 @@ setInterval(() => {
     me.on("data", async (data) => {
         let _message = JSON.parse(data.toString());
         if (_message.method == "getUsers"){
-            updating_users = _message.users;
+            if (_message.status){
+                updating_users = _message.users;
+            }
         }
     })
 }, 3000)

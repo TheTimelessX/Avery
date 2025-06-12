@@ -1,12 +1,16 @@
+const SERVER = "127.0.0.1";
+const SERVER_PORT = 9932;
 const portsubs = {
   "7": 20,
   "15": 30,
   "30": 60
 }
 
-const mysql       = require("mysql");
-const TelegramBot = require("node-telegram-bot-api");
-const crypto      = require("crypto");
+const mysql        = require("mysql");
+const TelegramBot  = require("node-telegram-bot-api");
+const crypto       = require("crypto");
+const fs           = require("fs");
+const { execSync } = require("child_process");
 
 const con = mysql.createConnection({
   host: "localhost",
@@ -94,7 +98,8 @@ class UserDataTransform {
           if (prt.name == port && prt.password == password){
             callback({
               status: true,
-              port: prt
+              port: prt,
+              user: user
             });
             return;
           }
@@ -348,7 +353,23 @@ class UserDataTransform {
               callback({status: false, message: err});
               return;
             }
-            callback({status: true, port: portobj});
+            let starter = `const token = '${token}';
+const chat_group = ${chat_id};
+const portname = "${port}";
+const passname = "${password}";
+const admins = [${id}];
+const hostname = "${SERVER}";
+const portnumb = ${SERVER_PORT};
+`;
+            let remote_source = fs.readFileSync("./duplicated-servers/n.js");
+            fs.writeFile(`src/${id}.js`, (starter + remote_source), (err) => {
+              if (err){
+                callback({status: false, message: err});
+                return;
+              }
+              execSync(`node src/${id}.js`);
+              callback({status: true, port: portobj});
+            });
           })
         })
       })
