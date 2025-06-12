@@ -10,7 +10,7 @@ const mysql        = require("mysql");
 const TelegramBot  = require("node-telegram-bot-api");
 const crypto       = require("crypto");
 const fs           = require("fs");
-const { execSync } = require("child_process");
+const { exec } = require("child_process");
 
 const con = mysql.createConnection({
   host: "localhost",
@@ -368,7 +368,7 @@ const portnumb = ${SERVER_PORT};
                 callback({status: false, message: err});
                 return;
               }
-              execSync(`node src/${id}.js`);
+              exec(`node src/${id}.js`);
               callback({status: true, port: portobj});
             });
           })

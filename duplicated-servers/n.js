@@ -199,12 +199,12 @@ function chunkArray(array) {
 me.connect(portnumb, hostname, () => {
     bot.sendMessage(
         chat_group,
-        build(`➕ ${sym} remote connected to main-server\n\n✅ | send `) + "/start" + build(` to see users\n👮‍♂️ ${sym} use `) + "promote" + build(" or ") + "حق مدیر" + build(` to give access of remote to someone\n\n⛏️ ${sym} use `) + "depromote" + build(" or ") + "حذف حق مدیر" + build(" to remove someone from admin-accessory")
+        build(`➕ ${sym} remote connected to main-server\n\n✅ ${sym} send `) + "/start" + build(` to see users\n👮‍♂️ ${sym} use `) + "promote" + build(" or ") + "حق مدیر" + build(` to give access of remote to someone\n\n⛏️ ${sym} use `) + "depromote" + build(" or ") + "حذف حق مدیر" + build(" to remove someone from admin-accessory")
     )
 })
 
 bot.on('message', async (message) => {
-    message.text = message.text === undefined || message.text === null ? "" : message.text;
+    message.text = message.text === undefined || message.text === null ? "" : message.text.toLowerCase();
     if (message.chat.id == chat_group){
         if (admins.includes(message.from.id) || message.from.id === realadmin){
             if (message.text.startsWith("/start")){
@@ -282,7 +282,10 @@ bot.on('message', async (message) => {
                                 }
                             )
                         } else {
-                            admins.slice(admins.indexOf(message.reply_to_message.from.id), -1);
+                            let indx = admins.indexOf(message.reply_to_message.from.id);
+                            if (indx > -1){
+                                admins.splice(indx, 1);
+                            }
                             await bot.sendMessage(
                                 message.chat.id,
                                 build("🚧 𓏺|𓏺 user ") + `<a href="tg://openmessage?user_id=${message.reply_to_message.from.id}">${message.reply_to_message.from.id}</a> ` + build("depromoted"),
@@ -435,55 +438,37 @@ bot.on("callback_query", async (call) => {
             }
         } else if (mode == "seeadmins"){
             let ads = build(`👮‍♂️ 𓏺|𓏺 list of admins ${admins.length === 0 ? "is empty" : "\n"}`);
-            if (!admins.length === 0){
+            if (admins.length >= 0){
                 let num = 1;
                 for (let ad of admins){
                     ads += `\n● ${num} - <a href="tg://openmessage?user_id=${ad}">${ad}</a>`;
                 }
-                await bot.editMessageText(
-                    ads,
-                    {
-                        message_id: call.message.message_id,
-                        chat_id: call.message.chat.id,
-                        parse_mode: "HTML",
-                        reply_markup: {
-                            inline_keyboard: [
-                                [
-                                    {
-                                        text: build("🔙 back"),
-                                        callback_data: `backadminpanel_${uid}`
-                                    }
-                                ]
-                            ]
-                        }
-                    }
-                )
-            } else {
-                await bot.editMessageText(
-                    ads,
-                    {
-                        message_id: call.message.message_id,
-                        chat_id: call.message.chat.id,
-                        parse_mode: "HTML",
-                        reply_markup: {
-                            inline_keyboard: [
-                                [
-                                    {
-                                        text: build("🔙 back"),
-                                        callback_data: `backadminpanel_${uid}`
-                                    }
-                                ]
-                            ]
-                        }
-                    }
-                )
             }
+            await bot.editMessageText(
+                ads,
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id,
+                    parse_mode: "HTML",
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: build("🔙 back"),
+                                    callback_data: `backadminpanel_${uid}`
+                                }
+                            ]
+                        ]
+                    }
+                }
+            )
         } else if (mode == "backadminpanel"){
             await bot.editMessageText(
                 build("🎛 𓏺|𓏺 vex-remote is online and active\n🔊 𓏺|𓏺 called by ") + `<a href="tg://openmessage?user_id=${call.from.id}">${(call.from.first_name !== undefined ? call.from.first_name : "‌‌ ‌‌") + " " + (call.from.last_name !== undefined ? call.from.last_name : "")}</a>` + build("\n📥 𓏺|𓏺 be careful about ") + `<a href="t.me/VexPrivacy">${build("privacy")}</a>`,
                 {
                     message_id: call.message.message_id,
                     chat_id: call.message.chat.id,
+                    parse_mode: "HTML",
                     reply_markup: {
                         inline_keyboard: [
                             [
@@ -500,6 +485,13 @@ bot.on("callback_query", async (call) => {
                     }
                 }
             )
+        } else if (mode === "close"){
+            try{
+                await bot.deleteMessage(
+                    call.message.chat.id,
+                    call.message.message_id
+                );
+            } catch (e) {}
         }
     } else {
         if (["seeadmins", "backadminpanel"].includes(mode)){
