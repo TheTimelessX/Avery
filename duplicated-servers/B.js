@@ -84,6 +84,13 @@ const server = net.createServer(async (socket) => {
                             }
 
                         })
+                    } else {
+                        socket.write(JSON.stringify({
+                            status: false,
+                            method: Object.keys(message).includes("method") ? message.method : "error",
+                            message: "PORT_AND_PASSWORD_NOT_FOUND"
+                        }));
+                        return;
                     }
                 } else if (Object.keys(message).includes("port") && Object.keys(message).includes("password")){
                     await udt.getUserByPort(message.port, message.password, async (prt) => {

