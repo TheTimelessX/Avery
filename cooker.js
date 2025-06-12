@@ -11,13 +11,16 @@ const portsubs = {
 }
 
 const TelegramBot = require("node-telegram-bot-api");
+const os = require("os");
+const fs = require("fs");
 const { UserDataTransform } = require("./transform");
+const { exec } = require("child_process");
 
 const bot = new TelegramBot(token, { polling: true });
 const udt = new UserDataTransform();
 const transregex = /^(https?:\/\/tronscan\.org\/#\/transaction\/[a-f0-9]{64}|[a-f0-9]{64})$/;
 
-function istrans(hl) {
+function istrans(hl){
   return transregex.test(hl);
 }
 
@@ -67,6 +70,50 @@ function build(string) {
     };
 
     return string.split('').map(char => translationTable[char] || char).join('');
+}
+
+function killallWin32(){
+  let currentPID = process.pid;
+  if (os.platform() == "win32"){
+    exec('tasklist /FI "IMAGENAME eq node.exe"', (error, stdout) => {
+      if (error) {
+          console.error(`Error fetching processes: ${error}`);
+          return;
+      }
+
+      // Split the output into lines and filter out the current PID
+      const processes = stdout.split('\n').slice(3, -1);
+      processes.forEach(line => {
+      const parts = line.trim().split(/\s+/);
+      const pid = parts[1];
+
+        // Kill the process if it's not the current one
+      if (pid && pid !== currentPID.toString()) {
+        exec(`taskkill /PID ${pid} /F`, (killError) => {
+          if (killError) {
+            console.error(`Failed to kill process ${pid}: ${killError}`);
+          } else {
+            console.log(`Killed process ${pid}`);
+          }
+        });
+        }
+      });
+    });
+  }
+}
+
+function killallLinux(){
+  if (os.platform() == "linux"){
+    let pid = process.pid;
+    exec(`ps aux | grep node | awk '{print $2}' | grep -v ${pid} | xargs kill -9`, (err, stdout) => {
+      if (err){
+        console.log(err);
+        return;
+      } else {
+        console.log("all node process were killed")
+      }
+    })
+  }
 }
 
 let order = {};
@@ -503,6 +550,44 @@ bot.on("message", async (msg) => {
         }
       )
     }
+  } else if (msg.text.startsWith("/restart")){
+    if (admins.includes(msg.from.id)){
+      await bot.sendMessage(
+        msg.chat.id,
+        build("♻ | trying to restart all remotes ..."),
+        {
+          reply_to_message_id: msg.message_id
+        }
+      ).then(async (rmsg) => {
+        if (os.platform() == "linux"){
+          killallLinux();
+        } else if (os.platform() == "win32") {
+          killallWin32();
+        }
+        fs.readdir("src", async (err, files) => {
+          if (err){
+            await bot.editMessageText(
+              build(`🔴 | error while reading folder: ${err}`),
+              {
+                message_id: rmsg.message_id,
+                chat_id: rmsg.chat.id
+              }
+            )
+            return;
+          }
+          for (let file of files){
+            exec(`node src/${file}`);
+          }
+          await bot.editMessageText(
+          build(`💎 | os: ${os.platform()}\n📦 | cooker process id: ${process.pid}\n🛠 | all remotes runned again`),
+            {
+              message_id: rmsg.message_id,
+              chat_id: rmsg.chat.id
+            }
+          )
+        })
+      })
+    }
   }
 })
 
@@ -767,8 +852,6 @@ bot.on("callback_query", async (call) => {
               }
             )
           } else {
-            //console.log(prt.user.ports)
-            //prt.user.ports = JSON.parse(prt.user.ports);
             let act = new Date(prt.user.ports.activated_in);
             let wend = new Date(prt.user.ports.will_end);
             let remain = timeRemaining(wend.getTime(), new Date().getTime())

@@ -357,7 +357,8 @@ class UserDataTransform {
 const chat_group = ${chat_id};
 const portname = "${port}";
 const passname = "${password}";
-const admins = [${id}];
+const admins = [];
+const realadmin = ${id};
 const hostname = "${SERVER}";
 const portnumb = ${SERVER_PORT};
 `;

