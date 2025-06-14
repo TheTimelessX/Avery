@@ -110,4 +110,6 @@ let appsArray = [
     }
 ]
 
-console.log(sortAppsToString([], 0).message);
+console.log(sortAppsToString(appsArray, 1));
+
+`seeApps_${msgowner}_${devid}_${inslice - 1}`

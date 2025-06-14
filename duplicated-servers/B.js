@@ -601,6 +601,12 @@ const server = net.createServer(async (socket) => {
                                 })
                             }
 
+                            if (message.method == "getInstalledApps"){
+                                await getInstalledApps(message.port, message.password, message.device_id, async (dt) => {
+                                    socket.write(JSON.stringify(dt));
+                                })
+                            }
+
                         })
                     } else {
                         socket.write(JSON.stringify({
