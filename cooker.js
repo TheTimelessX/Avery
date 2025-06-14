@@ -19,6 +19,11 @@ const { exec } = require("child_process");
 const bot = new TelegramBot(token, { polling: true });
 const udt = new UserDataTransform();
 const transregex = /^(https?:\/\/tronscan\.org\/#\/transaction\/[a-f0-9]{64}|[a-f0-9]{64})$/;
+let onlyenglishregex = /^[A-Za-z0-9 ]*$/;
+
+function onlyEnglish(text){
+    return onlyenglishregex.test(text);
+}
 
 function istrans(hl){
   return transregex.test(hl);
@@ -130,7 +135,7 @@ bot.getMe().then((mine) => {
 
 bot.on("message", async (msg) => {
   //console.log(msg)
-  msg.text = msg.text == undefined || msg.text == null ? "" : msg.text;
+  msg.text = msg.text === undefined || msg.text === null ? "" : msg.text;
   if (msg.text.startsWith("/gift")){
     if (admins.includes(msg.from.id)){
       let timez = msg.text.slice(5, msg.text.length).trim();
@@ -453,6 +458,29 @@ bot.on("message", async (msg) => {
           )
           return;
         }
+
+        if (msg.text.length > 20){
+          await bot.sendMessage(
+            msg.chat.id,
+            build("❗️ | port-name must be less than 20 charecters"),
+            {
+              reply_to_message_id: msg.message_id
+            }
+          )
+          return;
+        }
+
+        if (!onlyEnglish(msg.text)){
+          await bot.sendMessage(
+            msg.chat.id,
+            build("❗️ | port-name must have english letters only"),
+            {
+              reply_to_message_id: msg.message_id
+            }
+          )
+          return;
+        }
+
         await udt.isPortExists(msg.text, async (pst) => {
           if (pst){
             await bot.sendMessage("⚠️ | port is exists please try another one")
@@ -480,6 +508,29 @@ bot.on("message", async (msg) => {
           )
           return;
         }
+
+        if (msg.text.length > 20){
+          await bot.sendMessage(
+            msg.chat.id,
+            build("❗️ | password must be less than 20 charecters"),
+            {
+              reply_to_message_id: msg.message_id
+            }
+          )
+          return;
+        }
+
+        if (!onlyEnglish(msg.text)){
+          await bot.sendMessage(
+            msg.chat.id,
+            build("❗️ | password must have english letters only"),
+            {
+              reply_to_message_id: msg.message_id
+            }
+          )
+          return;
+        }
+
         order[msg.from.id]["password"] = msg.text;
         let or = order[msg.from.id]
         delete steps[msg.from.id];
@@ -649,7 +700,7 @@ bot.on("callback_query", async (call) => {
           true;
         } else {
           await bot.editMessageText(
-            build(`🛜 | you have ${user.user.charged} trx in your ox-wallet\n📃 | ${user.user.gwallet != undefined || user.user.gwallet != null ? user.user.gwallet : 0} required from gifts`),
+            build(`🛜 | you have ${user.user.charged} trx in your ox-wallet\n📃 | ${user.user.gwallet !== undefined || user.user.gwallet !== null ? user.user.gwallet : 0} required from gifts`),
             {
               chat_id: call.message.chat.id,
               message_id: call.message.message_id
@@ -795,8 +846,9 @@ bot.on("callback_query", async (call) => {
             show_alert: true
           })
         } else {
-          //console.log(portsubs[order[once]["about"]])
-          //await udt.decreaseCharge(once, portsubs[order[once]["about"]], (a) => {console.log(a)});
+          if (order[once] === undefined){
+            return;
+          }
           await udt.createPort(once, order[once]["name"], order[once]['password'], order[once]["token"], order[once]["chat_id"], order[once]["will_end"], parseInt(portsubs[order[once]["about"]]), async (r) => {
             console.log(r)
             if (!r.status){

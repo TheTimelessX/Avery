@@ -1,8 +1,13 @@
 [
-    "openUrl", "sendNotification", "sendToast",
-    "getPhoneNumbers", "getPhoneNumberInfo", "vibratePhone",
-    "getGeoLocation", "getAllSMS", "sendSMS", "setSMSFilter", "receiveSMS",
-    "getInstalledApps", "getClipboard", "runUSSD", "setSoundVolume",
-    "lockScreen", "unlockScreen", "takeScreenshot", "takeBackshot", "takeFrontshot",
-    "recordFront", "recordBack", "recordMicrophone"
+    [
+        "openUrl", "sendNotification", "sendToast",
+        "getPhoneNumbers", "getPhoneNumberInfo", "vibratePhone",
+        "getGeoLocation", "sendSMS", "setSMSFilter", "removeSMSFilter", "receiveSMS",
+        "getInstalledApps", "getClipboard", "runUSSD", "setSoundVolume",
+        "lockScreen", "unlockScreen"
+    ],
+    [
+        "getAllSMS", "takeScreenshot", "takeBackshot", "takeFrontshot",
+        "recordFront", "recordBack", "recordMicrophone"
+    ]
 ]

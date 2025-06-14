@@ -243,9 +243,9 @@ class UserDataTransform {
       }
 
       user.user.charged += amount;
-      user.user.gwallet = user.user.gwallet == undefined || user.user.gwallet == null ? 0 : user.user.gwallet;
+      user.user.gwallet = user.user.gwallet === undefined || user.user.gwallet === null ? 0 : user.user.gwallet;
       if (isgift){
-        if (user.user.gwallet != undefined || user.user.gwallet != null){
+        if (user.user.gwallet !== undefined || user.user.gwallet !== null){
           user.user.gwallet += amount;
         } else {
           user.user.gwallet = amount;
@@ -268,7 +268,7 @@ class UserDataTransform {
         callback({status: false, message: user.message});
         return ;
       }
-      user.user.gwallet = user.user.gwallet == undefined || user.user.gwallet == null ? 0 : user.user.gwallet;
+      user.user.gwallet = user.user.gwallet === undefined || user.user.gwallet === null ? 0 : user.user.gwallet;
       console.log(user.user.gwallet);
       if (user.user.gwallet >= amount){
         console.log('using gwallet')
