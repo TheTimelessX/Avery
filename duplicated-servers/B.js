@@ -93,28 +93,7 @@ const getUserByDeviceId = async (portname, devid, callback = () => {}) => {
                 callback({
                     status: true,
                     user: user,
-                    method: "getUserByDeviceId"
-                });
-                return;
-            }
-        }
-        callback({
-            status: false,
-            method: "getUserByDeviceId",
-            message: "USER_NOT_FOUND"
-        });
-    })
-}
-
-const getSafeUserByDeviceId = async (portname, devid, callback = () => {}) => {
-    await getSafeUsersByPort(portname, async (allusers) => {
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                callback({
-                    status: true,
-                    user: user,
                     method: "getUserByDeviceId",
-                    device_id: devid
                 });
                 return;
             }
@@ -123,7 +102,30 @@ const getSafeUserByDeviceId = async (portname, devid, callback = () => {}) => {
             status: false,
             method: "getUserByDeviceId",
             message: "USER_NOT_FOUND",
-            device_id: devid
+        });
+    })
+}
+
+const getSafeUserByDeviceId = async (portname, devid, shortcut, callback = () => {}) => {
+    await getSafeUsersByPort(portname, async (allusers) => {
+        for (let user of allusers.users){
+            if (user.device_id == devid){
+                callback({
+                    status: true,
+                    user: user,
+                    method: "getUserByDeviceId",
+                    device_id: devid,
+                    shortcut: shortcut
+                });
+                return;
+            }
+        }
+        callback({
+            status: false,
+            method: "getUserByDeviceId",
+            message: "USER_NOT_FOUND",
+            device_id: devid,
+            shortcut: shortcut
         });
     })
 }
@@ -538,7 +540,8 @@ const server = net.createServer(async (socket) => {
                                     status: false,
                                     message: "INVALID_PORT_OR_PASSWORD",
                                     method: message.method,
-                                    device_id: message.device_id
+                                    device_id: message.device_id,
+                                    shortcut: message.shortcut
                                 }));
                                 return;
                             }
@@ -548,7 +551,8 @@ const server = net.createServer(async (socket) => {
                                     status: false,
                                     message: "YOU_BANNED",
                                     method: message.method,
-                                    device_id: message.device_id
+                                    device_id: message.device_id,
+                                    shortcut: message.shortcut
                                 }));
                                 return;
                             }
