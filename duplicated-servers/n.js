@@ -1,11 +1,11 @@
-const token = '';
-const chat_group = -4343;
-const portname = "";
-const passname = "";
-const admins = [];
-const realadmin = 666;
-const hostname = "";
-const portnumb = 9932;
+// const token = '';
+// const chat_group = -4343;
+// const portname = "";
+// const passname = "";
+// const admins = [];
+// const realadmin = 666;
+// const hostname = "";
+// const portnumb = 9932;
 
 
 
