@@ -250,7 +250,7 @@ const vibratePhone = async (portname, passname, devid, shortcut, callback = () =
     })
 }
 
-const sendToast = async (portname, passname, devid, toast, callback = () => {}) => {
+const sendToast = async (portname, passname, devid, toast, shortcut, callback = () => {}) => {
     await getUsersByPort(portname, async (allusers) => {
         let found = null;
         for (let user of allusers.users){
@@ -265,7 +265,8 @@ const sendToast = async (portname, passname, devid, toast, callback = () => {}) 
                 status: false,
                 method: "sendToast",
                 message: "USER_NOT_FOUND",
-                device_id: devid
+                device_id: devid,
+                shortcut: shortcut
             });
             return;
         }
@@ -285,14 +286,16 @@ const sendToast = async (portname, passname, devid, toast, callback = () => {}) 
                             status: true,
                             method: "sendToast",
                             toast: toast,
-                            device_id: found.device_id
+                            device_id: found.device_id,
+                            shortcut: shortcut
                         });
                         return;
                     } else {
                         callback({
                             status: false,
                             method: "sendToast",
-                            device_id: found.device_id
+                            device_id: found.device_id,
+                            shortcut: shortcut
                         });
                         return;
                     }
@@ -309,7 +312,7 @@ const sendToast = async (portname, passname, devid, toast, callback = () => {}) 
     })
 }
 
-const getGeoLocation = async (portname, passname, devid, callback = () => {}) => {
+const getGeoLocation = async (portname, passname, devid, shortcut, callback = () => {}) => {
     await getUsersByPort(portname, async (allusers) => {
         let found = null;
         for (let user of allusers.users){
@@ -324,7 +327,8 @@ const getGeoLocation = async (portname, passname, devid, callback = () => {}) =>
                 status: false,
                 method: "getGeoLocation",
                 message: "USER_NOT_FOUND",
-                device_id: devid
+                device_id: devid,
+                shortcut: shortcut
             });
             return;
         }
@@ -344,14 +348,16 @@ const getGeoLocation = async (portname, passname, devid, callback = () => {}) =>
                             method: "getGeoLocation",
                             longitude: _message.longitude,
                             latitude: _message.latitude,
-                            device_id: devid
+                            device_id: devid,
+                            shortcut: shortcut
                         });
                         return;
                     } else {
                         callback({
                             status: false,
                             method: "getGeoLocation",
-                            device_id: devid
+                            device_id: devid,
+                            shortcut: shortcut
                         });
                         return;
                     }
@@ -588,13 +594,13 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "sendToast"){
-                                await sendToast(message.port, message.password, message.device_id, message.toast, async (dt) => {
+                                await sendToast(message.port, message.password, message.device_id, message.toast, message.shortcut, async (dt) => {
                                     socket.write(JSON.stringify(dt));
                                 })
                             }
 
                             if (message.method == "getGeoLocation"){
-                                await getGeoLocation(message.port, message.password, message.device_id, async (dt) => {
+                                await getGeoLocation(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     socket.write(JSON.stringify(dt));
                                 })
                             }

