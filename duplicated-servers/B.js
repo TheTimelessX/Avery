@@ -420,6 +420,8 @@ const server = net.createServer(async (socket) => {
                                                 message_id: message.shortcut.message_id
                                             }
                                         )
+                                    } else {
+                                      socket.write(JSON.stringify(user));
                                     }
                                 })
                             }

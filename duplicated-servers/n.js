@@ -707,7 +707,7 @@ bot.on("callback_query", async (call) => {
             let devid = spl[2];
             let slc = spl[3];
             if (Object.keys(device_apps).includes(devid)){
-                let srta = sortAppsToString(device_apps[devid], slc, devid, uid);
+                let srta = sortAppsToString(device_apps[devid], parseInt(slc), devid, uid);
                 await bot.editMessageText(
                     srta.message,
                     {
@@ -822,67 +822,6 @@ me.on("data", async (data) => {
                     )
                 }
             }
-        //} else {
-//             if (_message.shortcut){
-//                 if (_message.message == "USER_NOT_FOUND"){
-//                     _message.edit == false ? await bot.sendMessage(
-//                         _message.shortcut.chat_id,
-//                         build("🔴 𓏺|𓏺 user not found"),
-//                         {
-//                             reply_to_message_id: _message.shortcut.message_id
-//                         }
-//                     ) : await bot.editMessageText(
-//                         build("🔴 𓏺|𓏺 user not found"),
-//                         {
-//                             chat_id: _message.shortcut.chat_id,
-//                             message_id: _message.shortcut.message_id
-//                         }
-//                     )
-//                 } else if (_message.message == "INVALID_PORT_OR_PASSWORD"){
-//                     _message.edit == false ? await bot.sendMessage(
-//                         _message.shortcut.chat_id,
-//                         build("🔴 𓏺|𓏺 invalid port or password detected"),
-//                         {
-//                             reply_to_message_id: _message.shortcut.message_id
-//                         }
-//                     ) : await bot.editMessageText(
-//                         build("🔴 𓏺|𓏺 invalid port or password detected"),
-//                         {
-//                             chat_id: _message.shortcut.chat_id,
-//                             message_id: _message.shortcut.message_id
-//                         }
-//                     )
-//                 } else if (_message.message == "YOU_BANNED"){
-//                     _message.edit == false ? await bot.sendMessage(
-//                         _message.shortcut.chat_id,
-//                         build("🔴 𓏺|𓏺 sorry but you got banned"),
-//                         {
-//                             reply_to_message_id: _message.shortcut.message_id
-//                         }
-//                     ) : await bot.editMessageText(
-//                         build("🔴 𓏺|𓏺 sorry but you got banned"),
-//                         {
-//                             chat_id: _message.shortcut.chat_id,
-//                             message_id: _message.shortcut.message_id
-//                         }
-//                     )
-//                 } else {
-//                     console.log(_message);
-//                     _message.edit == false ? await bot.sendMessage(
-//                         _message.shortcut.chat_id,
-//                         build("🔴 𓏺|𓏺 unkown error detected !"),
-//                         {
-//                             reply_to_message_id: _message.shortcut.message_id
-//                         }
-//                     ) : await bot.editMessageText(
-//                         build("🔴 𓏺|𓏺 unkown error detected ! maybe process didnt successful"),
-//                         {
-//                             chat_id: _message.shortcut.chat_id,
-//                             message_id: _message.shortcut.message_id
-//                         }
-//                     )
-//                 }
-//             }
         }
     } catch (e) {
         console.log(e)
