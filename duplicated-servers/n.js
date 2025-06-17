@@ -737,7 +737,7 @@ bot.on("callback_query", async (call) => {
             )
         } else if (mode == "volumePanel"){
             await bot.editMessageText(
-                build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`💠 ${sym} selected volume is 50`),
+                build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`\n💠 ${sym} selected volume is 50`),
                 {
                     chat_id: call.message.chat.id,
                     message_id: call.message.message_id,
@@ -782,7 +782,7 @@ bot.on("callback_query", async (call) => {
                 )
             } else {
                 await bot.editMessageText(
-                    build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`💠 ${sym} selected volume is ${volume - 5}`),
+                    build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`\n💠 ${sym} selected volume is ${volume - 5}`),
                     {
                         chat_id: call.message.chat.id,
                         message_id: call.message.message_id,
@@ -828,7 +828,7 @@ bot.on("callback_query", async (call) => {
                 )
             } else {
                 await bot.editMessageText(
-                    build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`💠 ${sym} selected volume is ${volume + 5}`),
+                    build(`🔊 ${sym} volume-panel for `) + spl[2] + build(`\n💠 ${sym} selected volume is ${volume + 5}`),
                     {
                         chat_id: call.message.chat.id,
                         message_id: call.message.message_id,
@@ -966,3 +966,7 @@ setInterval(() => {
         mask: "metro"
     }))
 }, 3000)
+
+process.on("uncaughtException", async (err) => {
+    console.log("[B] error detected:", err);
+})
