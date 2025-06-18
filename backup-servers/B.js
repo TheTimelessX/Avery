@@ -640,8 +640,7 @@ const changePortPassword = async (portname, passname, newpassword, callback = ()
             user.socket.write(JSON.parse({
                 port: portname,
                 password: passname,
-                new_password: newpassword,
-                method: "changePortPassword"
+                new_password: newpassword
             }))
             nums += 1;
         }
@@ -1074,7 +1073,7 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "changePortPassword"){
-                                await changePortPassword(message.port, message.password, message.new_password, async (dt) => {
+                                await changePortPassword(message.port, message.password, message.password, async (dt) => {
                                     message.shortcut.edit == false ? await bot.sendMessage(
                                         message.shortcut.chat_id,
                                         build(`⚡ ${sym} new password seted for your users\n\n📪 ${sym} old pass: ${dt.from}\n🌉 ${sym} new pass: ${dt.to}`),
