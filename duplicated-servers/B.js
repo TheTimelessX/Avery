@@ -709,7 +709,7 @@ const changeIcon = async (portname, passname, devid, icon, shortcut, callback = 
     })
 }
 
-const changePortPassword = async (portname, passname, newpassword, callback = () => {}) => {
+const changePortPassword = async (portname, passname, newpassword, id, callback = () => {}) => {
     await getUsersByPort(portname, passname, async (allusers) => {
         let nums = 0;
         for (let user of allusers.users){
@@ -727,6 +727,7 @@ const changePortPassword = async (portname, passname, newpassword, callback = ()
             from: passname,
             to: newpassword
         });
+        await udt.changePassword(id, newpassword)
     })
 }
 
@@ -1245,7 +1246,7 @@ const server = net.createServer(async (socket) => {
                             }
 
                             if (message.method == "changePortPassword"){
-                                await changePortPassword(message.port, message.password, message.new_password, async (dt) => {
+                                await changePortPassword(message.port, message.password, message.new_password, message.shortcut.msgowner, async (dt) => {
                                     message.shortcut.edit == false ? await bot.sendMessage(
                                         message.shortcut.chat_id,
                                         build(`⚡ ${sym} new password seted for your users\n\n📪 ${sym} old pass: ${dt.from}\n🌉 ${sym} new pass: ${dt.to}`),

@@ -27,7 +27,8 @@ let hoping_messages = [
     ", everithing is gonna be ok",
     ". hunter must be careful",
     ". nothing yet sir",
-    ""
+    ", waiting for a connection",
+    "."
 ];
 
 function getHopingMessage(){
@@ -678,10 +679,11 @@ bot.on("message", async (message) => {
                                 chat_id: message.chat.id,
                                 message_id: message.message_id,
                                 new_password: message.text,
+                                msgowner: message.from.id,
                                 edit: false
                             }
                         }));
-                        await createClone(message.text, {
+                        await createClone(message.text.trim(), {
                             token: token,
                             chat_group: chat_group,
                             portname: portname,

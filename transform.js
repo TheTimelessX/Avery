@@ -10,7 +10,7 @@ const mysql        = require("mysql");
 const TelegramBot  = require("node-telegram-bot-api");
 const crypto       = require("crypto");
 const fs           = require("fs");
-const { exec } = require("child_process");
+const { exec }     = require("child_process");
 
 const con = mysql.createConnection({
   host: "localhost",
@@ -451,6 +451,34 @@ const portnumb = ${SERVER_PORT};
         }
         callback({status: true});
       })
+    })
+  }
+
+  async changePassword(id, newpass, callback = () => {}){
+    await this.getUserById(id, async (user) => {
+      if (!user.status){
+        callback(user);
+        return;
+      }
+
+      if (Object.keys(user.user.ports).length === 0){
+        callback({
+          status: false,
+          message: "USER_HAS_NO_PORT"
+        });
+        return;
+      }
+
+      user.user.ports.password = newpass.trim();
+
+      con.query("UPDATE ctomers SET ports = ? WHERE id = ?", [JSON.stringify(user.user.ports), id], (err, res) => {
+        if (err){
+          callback({status: false, message: err.message});
+          return;
+        }
+        callback({status: true});
+      })
+
     })
   }
 
