@@ -455,7 +455,7 @@ bot.on("message", async (message) => {
                         }
                     )
                 }
-            } else if (["حذف مدیر", "depromote"].includes(message.text)){
+            } else if (["حذف مدیر", "depromote", "حذف حق مدیر"].includes(message.text)){
                 if (message.reply_to_message){
                     if (message.from.id === realadmin){
                         if (!admins.includes(message.reply_to_message.from.id)){
