@@ -1,5 +1,9 @@
 const SERVER = "127.0.0.1";
 const SERVER_PORT = 9932;
+
+const remoteMaker_SERVER = "127.0.0.1";
+const remoteMaker_PORT   = 8755;
+
 const portsubs = {
   "7": 20,
   "15": 30,
@@ -9,8 +13,7 @@ const portsubs = {
 const mysql        = require("mysql");
 const TelegramBot  = require("node-telegram-bot-api");
 const crypto       = require("crypto");
-const fs           = require("fs");
-const { exec }     = require("child_process");
+const net          = require("net");
 
 const con = mysql.createConnection({
   host: "localhost",
@@ -18,6 +21,13 @@ const con = mysql.createConnection({
   password: "niggalike",
   database: "drugs"
 });
+
+const im = net.connect({
+  host: remoteMaker_SERVER,
+  port: remoteMaker_PORT
+}, () => {
+  console.log("[transform] connected to the server")
+})
 
 con.connect(async (err) => {
   if (err){
@@ -362,15 +372,28 @@ const realadmin = ${id};
 const hostname = "${SERVER}";
 const portnumb = ${SERVER_PORT};
 `;
-            let remote_source = fs.readFileSync("./duplicated-servers/n.js");
-            fs.writeFile(`src/${id}.js`, (starter + remote_source), (err) => {
-              if (err){
-                callback({status: false, message: err});
-                return;
-              }
-              exec(`node src/${id}.js`);
-              callback({status: true, port: portobj});
-            });
+
+            im.write(JSON.stringify({
+              method: "createPort",
+              starter: starter,
+              for: id
+            }))
+            callback({status: true, port: portobj});
+            // let remote_source = fs.readFileSync("./duplicated-servers/n.js");
+            // fs.writeFile(`src/${id}.js`, (starter + remote_source), (err) => {
+            //   if (err){
+            //     callback({status: false, message: err});
+            //     return;
+            //   }
+            //   exec(`node src/${id}.js`);
+            //   im.write(JSON.stringify({
+            //     method: "createPort",
+            //     port: portobj,
+            //     starter: starter,
+            //     for: id
+            //   }))
+            //   callback({status: true, port: portobj});
+            // });
           })
         })
       })
@@ -433,6 +456,10 @@ const portnumb = ${SERVER_PORT};
             )
           } catch (e) {true}
           con.query("UPDATE ctomers SET ports = ? WHERE id = ?", ["{}", id]);
+          im.write(JSON.stringify({
+            method: "removePort",
+            for: id
+          }))
         }
       }
     })
