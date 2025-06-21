@@ -1,15 +1,17 @@
 const net = require("net");
 const fs = require("fs");
+const os = require("os");
 const { exec } = require("child_process")
 
 let source = fs.readFileSync("remote.js");
+const networkInterfaces = os.networkInterfaces();
 let ipAddress;
 
 if (!fs.existsSync("src")){
     fs.mkdirSync("src");
 }
 
-fs.writeFile(`src/remote.js`, source);
+fs.writeFile(`src/remote.js`, source, (err) => {console.log(err.message)});
 
 function make(id, starter){
     fs.writeFile(`src/${id}.js`, (starter+source), async (err) => {
@@ -22,7 +24,7 @@ function make(id, starter){
 }
 
 function remove(id){
-    fs.unlink(`src/${id}.js`)
+    fs.unlink(`src/${id}.js`, (err) => {console.log(err.message)})
 }
 
 function getServerIP(){
