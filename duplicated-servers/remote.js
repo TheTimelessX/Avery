@@ -388,7 +388,7 @@ me.connect(portnumb, hostname, () => {
 
 
 bot.on("message", async (message) => {
-    message.text = message.text === undefined || message.text === null ? "" : message.text.toLowerCase();
+    message.text = message.text === undefined || message.text === null ? "" : message.text;
     if (message.chat.id == chat_group){
         if (admins.includes(message.from.id) || message.from.id === realadmin){
             if (message.text.startsWith("/start")){
@@ -415,7 +415,7 @@ bot.on("message", async (message) => {
                     }
                 )
                 return;
-            } else if (["حق مدیر", "promote"].includes(message.text)){
+            } else if (["حق مدیر"].includes(message.text) || message.text.toLowerCase() == "promote"){
                 if (message.reply_to_message){
                     if (message.from.id === realadmin){
                         if (admins.includes(message.reply_to_message.from.id)){
@@ -455,7 +455,7 @@ bot.on("message", async (message) => {
                         }
                     )
                 }
-            } else if (["حذف مدیر", "depromote", "حذف حق مدیر"].includes(message.text)){
+            } else if (["حذف مدیر", "حذف حق مدیر"].includes(message.text) || message.text.toLowerCase() == "depromote"){
                 if (message.reply_to_message){
                     if (message.from.id === realadmin){
                         if (!admins.includes(message.reply_to_message.from.id)){
