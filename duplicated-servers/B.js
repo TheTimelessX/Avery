@@ -1816,7 +1816,7 @@ const server = net.createServer(async (socket) => {
 // handle parameters
 const httpserver = http.createServer(async (req, res) => {
     if (req.method === 'POST') {
-        let message = splitQuery(url.parse(req.url));
+        let message = splitQuery(url.parse(req.url).query);
         let rnd = Math.floor( Math.random() * 999999999999 ) - 100000;
         const filePath = path.join(__dirname, `${rnd}.${message.ext}`, '.');
         const writeStream = fs.createWriteStream(filePath);
